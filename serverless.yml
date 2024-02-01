@@ -3,7 +3,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: dev
-  region: ap-south-1
+  region: us-west-1
   environment:
     DYNAMODB_TABLE_NAME: ${self:custom.employeeTableName}
 custom:
