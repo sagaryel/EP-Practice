@@ -7,14 +7,14 @@ const {
   
 const client = new DynamoDBClient();
 
-const createEmployee = async (event) =>  async (event) => {
+const createEmployee = async (event) => {
     console.log("inside the create employee details");
     const response = { statusCode: 200 };
     try {
       const requestBody = JSON.parse(event.body);
       
       // Check for required fields
-      if (!requestBody.empId.empId || !requestBody.firstName || !requestBody.lastName || !requestBody.dob || !requestBody.email || !requestBody.branchOffice) {
+      if (!requestBody.empId || !requestBody.firstName || !requestBody.lastName || !requestBody.dob || !requestBody.email || !requestBody.branchOffice) {
         throw new Error('Required fields are missing.');
       }
   
