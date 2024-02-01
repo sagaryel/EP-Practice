@@ -7,7 +7,7 @@ const createEmployee = async (event) => {
     // Validate the input data (Add your validation logic)
 
     const params = {
-        TableName: 'employeeTableName', 
+        TableName: 'employee-Details-dev', 
         Item: {
             empId: requestBody.empId,
             firstName: requestBody.firstName,
