@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-const createEmployee = async (event) => {
+export const createEmployee = async (event) => {
     const requestBody = JSON.parse(event.body);
 
     // Validate the input data (Add your validation logic)
