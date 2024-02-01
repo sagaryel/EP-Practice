@@ -1,13 +1,13 @@
 const AWS = require('aws-sdk');
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-export const createEmployee = async (event) => {
+const createEmployee = async (event) => {
     const requestBody = JSON.parse(event.body);
 
     // Validate the input data (Add your validation logic)
 
     const params = {
-        TableName: 'employee-Details', 
+        TableName: 'employeeTableName', 
         Item: {
             empId: requestBody.empId,
             firstName: requestBody.firstName,
@@ -40,3 +40,5 @@ export const createEmployee = async (event) => {
         };
     }
 };
+
+module.exports = createEmployee;
