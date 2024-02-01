@@ -5,9 +5,9 @@ provider:
   stage: dev
   region: ap-south-1
   environment:
-    EMPLOYEE_TABLE: ${self:custom.TableName}
+    DYNAMODB_TABLE_NAME: ${self:custom.employeeTableName}
 custom:
-  TableName: employee-Details-${self:provider.stage}
+  employeeTableName: employee-Details-${self:provider.stage}
 plugins:
   - serverless-iam-roles-per-function
 functions:
@@ -36,7 +36,7 @@ resources:
     EmployeeTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:custom.TableName}
+        TableName: ${self:custom.employeeTableName}
         AttributeDefinitions:
           - AttributeName: empId
             AttributeType: S
