@@ -9,7 +9,7 @@ export const createEmployee = async (event) => {
     const params = {
         TableName: 'employee-Details', 
         Item: {
-            employeeId: requestBody.employeeId,
+            empId: requestBody.employeeId,
             firstName: requestBody.firstName,
             lastName: requestBody.lastName,
             dob: requestBody.dob,
