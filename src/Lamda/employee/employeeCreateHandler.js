@@ -7,7 +7,8 @@ export const createEmployee = async (event) => {
     // Validate the input data (Add your validation logic)
 
     const params = {
-        TableName: 'employee-Details', 
+        TableName: 'employee-Details
+        ', 
         Item: {
             empId: requestBody.employeeId,
             firstName: requestBody.firstName,
