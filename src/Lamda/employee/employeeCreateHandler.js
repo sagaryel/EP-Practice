@@ -8,7 +8,7 @@ const moment = require('moment');
 const client = new DynamoDBClient();
 
 const currentDate = Date.now();      // get the current date and time in milliseconds
-const formattedDate = moment(currentDate).format('YYYY-MM-DD');    //formating date
+const formattedDate = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');    //formating date
 
 const createEmployee = async (event) => {
   console.log("inside the create employee details");
