@@ -17,7 +17,8 @@ const createEmployee = async (event) => {
     const requestBody = JSON.parse(event.body);
 
     // Check for required fields
-    if (!requestBody.empId || !requestBody.firstName || !requestBody.lastName || !requestBody.dob || !requestBody.email || !requestBody.branchOffice) {
+    const requiredFields = ['empId', 'firstName', 'lastName', 'dob', 'email', 'branchOffice'];
+    if (!requiredFields.every(field => requestBody[field])) {
       throw new Error('Required fields are missing.');
     }
 
