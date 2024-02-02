@@ -48,6 +48,7 @@ const createEmployee = async (event) => {
         leaveStructure: requestBody.leaveStructure,
         createdDateTime: requestBody.createdDateTime,
         updatedDateTime: requestBody.updatedDateTime,
+        department: requestBody.department
       }),
     };
     const createResult = await client.send(new PutItemCommand(params));
