@@ -11,7 +11,3 @@ export const httpStatusCodes = {
     INTERNAL_SERVER_ERROR : '400',
 };
 
-export const responseMessages = {
-    SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS : 'Successfully created employee details.',
-    FAILED_TO_CREATE_EMPLOYEE_DETAILS : 'Failed to create employee details.'
-};

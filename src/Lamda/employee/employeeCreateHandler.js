@@ -4,7 +4,7 @@ const {
   UpdateItemCommand,
 } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
-import { httpStatusCodes, responseMessages } from "../../environment/appconfig";
+import { httpStatusCodes } from "../../environment/appconfig";
 const moment = require('moment');
 const client = new DynamoDBClient();
 
@@ -58,14 +58,14 @@ const createEmployee = async (event) => {
     };
     const createResult = await client.send(new PutItemCommand(params));
     response.body = JSON.stringify({
-      message: responseMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
+      message: 'Successfully created employee details.',
       createResult,
     });
   } catch (e) {
     console.error(e);
     response.statusCode = INTERNAL_SERVER_ERROR;
     response.body = JSON.stringify({
-      message: responseMessages.FAILED_TO_CREATE_EMPLOYEE_DETAILS,
+      message: 'Failed to create employee details.',
       errorMsg: e.message,
       errorStack: e.stack,
     });
