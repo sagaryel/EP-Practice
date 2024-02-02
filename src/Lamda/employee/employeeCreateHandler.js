@@ -45,7 +45,7 @@ const createEmployee = async (event) => {
         officeEmailAddress: requestBody.officeEmailAddress || null,
         joiningDate: requestBody.joiningDate || null,
         emergencyContactPerson: requestBody.emergencyContactPerson || null,
-        designation: requestBody.designation,
+        designation: requestBody.designation || null,
         emergencyContactNumber: requestBody.emergencyContactNumber || null,
         resignedDate: requestBody.resignedDate || null,
         relievedDate: requestBody.relievedDate || null,
