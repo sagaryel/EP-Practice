@@ -7,6 +7,9 @@ const { marshall } = require('@aws-sdk/util-dynamodb');
 
 const client = new DynamoDBClient();
 
+const currentDate = Date.now();      // get the current date and time in milliseconds
+const formattedDate = moment(currentDate).format('YYYY-MM-DD');    //formating date
+
 const createEmployee = async (event) => {
   console.log("inside the create employee details");
   const response = { statusCode: 200 };
@@ -46,7 +49,7 @@ const createEmployee = async (event) => {
         resignedDate: requestBody.resignedDate || null,
         relievedDate: requestBody.relievedDate || null,
         leaveStructure: requestBody.leaveStructure || null,
-        createdDateTime: requestBody.createdDateTime || null,
+        createdDateTime: formattedDate,
         updatedDateTime: requestBody.updatedDateTime || null,
         department: requestBody.department || null
       }),
