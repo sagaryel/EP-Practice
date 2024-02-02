@@ -4,7 +4,7 @@ const {
   UpdateItemCommand,
 } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
-
+const moment = require('moment');
 const client = new DynamoDBClient();
 
 const currentDate = Date.now();      // get the current date and time in milliseconds
