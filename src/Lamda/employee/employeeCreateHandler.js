@@ -6,16 +6,12 @@ const {
 const { marshall } = require('@aws-sdk/util-dynamodb');
 const moment = require('moment');
 const client = new DynamoDBClient();
-const {
-  httpStatusCodes,
-  responseMessages
-} = require("../../environment/appconfig");
 const currentDate = Date.now();      // get the current date and time in milliseconds
 const formattedDate = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');    //formating date
 
 const createEmployee = async (event) => {
   console.log("inside the create employee details");
-  const response = { statusCode: httpStatusCodes.SUCCESS};
+  const response = { statusCode: 200};
   try {
     const requestBody = JSON.parse(event.body);
 
@@ -61,14 +57,14 @@ const createEmployee = async (event) => {
     };
     const createResult = await client.send(new PutItemCommand(params));
     response.body = JSON.stringify({
-      message: responseMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
+      message: 'Successfully created employee details.',
       createResult,
     });
   } catch (e) {
     console.error(e);
     response.statusCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
     response.body = JSON.stringify({
-      message: responseMessages.FAILED_TO_CREATE_EMPLOYEE_DETAILS,
+      message: 'Failed to create employee details.',
       errorMsg: e.message,
       errorStack: e.stack,
     });
