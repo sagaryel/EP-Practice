@@ -6,7 +6,10 @@ const {
 const { marshall } = require('@aws-sdk/util-dynamodb');
 const moment = require('moment');
 const client = new DynamoDBClient();
-const { httpStatusCodes, responseMessages } = require('../environment/appconfig');
+const {
+  httpStatusCodes,
+  responseMessages
+} = require("../../environment/appconfig");
 const currentDate = Date.now();      // get the current date and time in milliseconds
 const formattedDate = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');    //formating date
 
