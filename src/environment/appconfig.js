@@ -6,8 +6,7 @@ export const httpStatusCodes = {
     UNAUTHORIZED: '12008'
 };
 
-export const responseMessages = {
-    SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS: 'Successfully created employee details.',
-    FAILED_TO_CREATE_EMPLOYEE_DETAILS: 'Failed to create employee details.'
-};
+
+export const   SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS = 'Successfully created employee details.';
+export const   FAILED_TO_CREATE_EMPLOYEE_DETAILS ='Failed to create employee details.';
 
