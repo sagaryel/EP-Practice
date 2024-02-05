@@ -3,7 +3,7 @@ export const httpStatusCodes = {
     INTERNAL_SERVER_ERROR: '500',
     SUCCESS: '200',
     CREATED: '201',
-    'UNAUTHORIZED': '12008'
+    UNAUTHORIZED: '12008'
 };
 
 export const responseMessages = {
