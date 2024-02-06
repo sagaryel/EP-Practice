@@ -2,6 +2,7 @@ const {
   DynamoDBClient,
   PutItemCommand,
   UpdateItemCommand,
+  GetItemCommand,
 } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
 const moment = require('moment');
