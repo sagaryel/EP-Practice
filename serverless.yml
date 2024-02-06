@@ -3,9 +3,9 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: dev
-  region: us-west-1
+  region: us-east-1
   environment:
-    DYNAMODB_TABLE_NAME: ${self:custom.employeeTableName}
+    EMPLOYEE_TABLE: ${self:custom.employeeTableName}
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
 plugins:
@@ -13,8 +13,8 @@ plugins:
 functions:
   employeeCreate:
     handler: src/Lamda/employee/employeeCreateHandler.createEmployee
-    name: createemployee
-    memorySize: 512
+    name: employeeCreate
+    memorySize: 128
     timeout: 120
     events:
       - http:
@@ -36,12 +36,12 @@ resources:
     EmployeeTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:custom.employeeTableName}
+        TableName: ${self:custom.employeeTable}
         AttributeDefinitions:
-          - AttributeName: empId
+          - AttributeName: employeeId
             AttributeType: S
         KeySchema:
-          - AttributeName: empId
+          - AttributeName: employeeId
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
