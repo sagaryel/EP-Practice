@@ -27,6 +27,12 @@ const createEmployee = async (event) => {
         throw new Error('Required fields are missing.');
     }
 
+    // Check if the employeeId already exists
+    const employeeIdExists = await isEmployeeIdExists(requestBody.employeeId);
+    if (employeeIdExists) {
+        throw new Error('EmployeeId already exists.');
+    }
+
       const params = {
           TableName: process.env.EMPLOYEE_TABLE,
           Item: marshall({
@@ -75,6 +81,21 @@ const createEmployee = async (event) => {
       });
   }
   return response;
+};
+
+// Function to check if employeeId already exists
+const isEmployeeIdExists = async (employeeId) => {
+  try {
+      const params = {
+          TableName: process.env.EMPLOYEE_TABLE,
+          Key: { employeeId: { S: employeeId } }
+      };
+      const { Item } = await client.send(new GetItemCommand(params));
+      return !!Item; // If Item is not null, employeeId exists
+  } catch (error) {
+      console.error("Error checking if employeeId exists:", error);
+      throw new Error("Error checking if employeeId exists.");
+  }
 };
 
 module.exports = {
