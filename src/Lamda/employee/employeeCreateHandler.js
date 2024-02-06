@@ -85,17 +85,13 @@ const createEmployee = async (event) => {
 
 // Function to check if employeeId already exists
 const isEmployeeIdExists = async (employeeId) => {
-  try {
       const params = {
           TableName: process.env.EMPLOYEE_TABLE,
           Key: { employeeId: { S: employeeId } }
       };
       const { Item } = await client.send(new GetItemCommand(params));
-      return !!Item; // If Item is not null, employeeId exists
-  } catch (error) {
-      console.error("Error checking if employeeId exists:", error);
-      throw new Error("Error checking if employeeId exists.");
-  }
+       // If Item is not null, employeeId exists
+  return !!Item;
 };
 
 module.exports = {
