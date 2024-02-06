@@ -1,5 +1,5 @@
 // validator.js
-const validateEmployeeDetailsFields = (requestBody) => {
+const validateEmployeeDetails = (requestBody) => {
     const { employeeId, firstName, lastName, dateOfBirth, officeEmailAddress, branchOffice } = requestBody;
 
     // Check if required fields are missing
@@ -11,5 +11,5 @@ const validateEmployeeDetailsFields = (requestBody) => {
 };
 
 module.exports = {
-    validateEmployeeDetailsFields
+    validateEmployeeDetails
 };
