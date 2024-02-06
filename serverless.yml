@@ -6,6 +6,16 @@ provider:
   region: us-east-1
   environment:
     EMPLOYEE_TABLE: ${self:custom.employeeTableName}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:GetItem"
+        - "dynamodb:Scan"
+        - "dynamodb:DeleteItem"
+      Resource:
+        - !GetAtt EmployeeTable.Arn
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
 plugins:
@@ -20,17 +30,6 @@ functions:
       - http:
           path: employee
           method: POST
-    iamRoleStatements:
-      - Effect: "Allow"
-        Action:
-          - "dynamodb:PutItem"
-          - "dynamodb:UpdateItem"
-          - "dynamodb:GetItem"
-          - "dynamodb:Scan"
-          - "dynamodb:DeleteItem"
-        Resource:
-          - !GetAtt EmployeeTable.Arn
-
 resources:
   Resources:
     EmployeeTable:

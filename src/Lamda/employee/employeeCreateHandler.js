@@ -7,6 +7,7 @@ const { marshall } = require('@aws-sdk/util-dynamodb');
 const moment = require('moment');
 const client = new DynamoDBClient();
 const {httpStatusCodes, httpStatusMessages} = require("../../environment/appconfig");
+const { validateRequiredFields } = require("../../validator/validateRequest");
 const currentDate = Date.now();      // get the current date and time in milliseconds
 const formattedDate = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');    //formating date
 
@@ -18,10 +19,13 @@ const createEmployee = async (event) => {
       const requestBody = JSON.parse(event.body);
 
       // Check for required fields
-      const requiredFields = ['employeeId', 'firstName', 'lastName', 'dateOfBirth', 'officeEmailAddress', 'branchOffice'];
-      if (!requiredFields.every(field => requestBody[field])) {
-          throw new Error('Required fields are missing.');
-      }
+      // const requiredFields = ['employeeId', 'firstName', 'lastName', 'dateOfBirth', 'officeEmailAddress', 'branchOffice'];
+      // if (!requiredFields.every(field => requestBody[field])) {
+      //     throw new Error('Required fields are missing.');
+      // }
+      if (!validateEmployeeDetailsFields(requestBody)) {
+        throw new Error('Required fields are missing.');
+    }
 
       const params = {
           TableName: process.env.EMPLOYEE_TABLE,
