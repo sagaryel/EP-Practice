@@ -1,4 +1,5 @@
 service: employee-portal-service
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -18,10 +19,13 @@ provider:
       Resource:
         - !GetAtt EmployeeTable.Arn
         - !Sub "${EmployeeTable.Arn}/index/officeEmailAddress-index" # Add this line to allow Query on the index
+
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
+
 plugins:
   - serverless-iam-roles-per-function
+
 functions:
   employeeCreate:
     handler: src/Lamda/employee/employeeCreateHandler.createEmployee
@@ -32,6 +36,7 @@ functions:
       - http:
           path: employee
           method: POST
+
 resources:
   Resources:
     EmployeeTable:
@@ -49,11 +54,10 @@ resources:
         GlobalSecondaryIndexes:
           - IndexName: officeEmailAddress-index
             KeySchema:
-            - AttributeName: officeEmailAddress
-              KeyType: HASH
+              - AttributeName: officeEmailAddress
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
