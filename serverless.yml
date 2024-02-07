@@ -41,9 +41,18 @@ resources:
         AttributeDefinitions:
           - AttributeName: employeeId
             AttributeType: S
+          - AttributeName: officeEmailAddress
+            AttributeType: S
         KeySchema:
           - AttributeName: employeeId
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: officeEmailAddress-index
+            KeySchema:
+            - AttributeName: officeEmailAddress
+              KeyType: HASH
+            Projection:
+              ProjectionType: ALL
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
