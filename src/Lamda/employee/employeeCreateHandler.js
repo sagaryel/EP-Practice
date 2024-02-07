@@ -111,7 +111,7 @@ const isEmailExists = async (emailAddress) => {
     },
     ProjectionExpression: 'officeEmailAddress'
   };
-  const data = await client.query(params).promise();
+  const data = await dynamodb.query(params).promise();
   return data.Items.length > 0; // If there are items, email exists
 };
 
