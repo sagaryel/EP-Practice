@@ -4,15 +4,18 @@ const {
   QueryCommand,
   UpdateItemCommand,
   GetItemCommand,
-} = require('@aws-sdk/client-dynamodb');
-const { marshall } = require('@aws-sdk/util-dynamodb');
-const moment = require('moment');
+  ScanCommand,
+} = require("@aws-sdk/client-dynamodb");
+const { marshall } = require("@aws-sdk/util-dynamodb");
+const moment = require("moment");
 const client = new DynamoDBClient();
-const { httpStatusCodes, httpStatusMessages } = require("../../environment/appconfig");
+const {
+  httpStatusCodes,
+  httpStatusMessages,
+} = require("../../environment/appconfig");
 const { validateEmployeeDetails } = require("../../validator/validateRequest");
-const currentDate = Date.now();      // get the current date and time in milliseconds
-const formattedDate = moment(currentDate).format('YYYY-MM-DD HH:mm:ss');    //formating date
-
+const currentDate = Date.now(); // get the current date and time in milliseconds
+const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
 
 const createEmployee = async (event) => {
   console.log("inside the create employee details");
@@ -26,20 +29,20 @@ const createEmployee = async (event) => {
     //     throw new Error('Required fields are missing.');
     // }
     if (!validateEmployeeDetails(requestBody)) {
-      throw new Error('Required fields are missing.');
+      throw new Error("Required fields are missing.");
     }
 
     // Check if the employeeId already exists
     const employeeIdExists = await isEmployeeIdExists(requestBody.employeeId);
     if (employeeIdExists) {
-      throw new Error('EmployeeId already exists.');
+      throw new Error("EmployeeId already exists.");
     }
 
     // Check if the email address already exists
-    // const emailExists = await isEmailExists(requestBody.officeEmailAddress);
-    // if (emailExists) {
-    //   throw new Error('Email address already exists.');
-    // }
+    const emailExists = await isEmailExists(requestBody.officeEmailAddress);
+    if (emailExists) {
+      throw new Error("Email address already exists.");
+    }
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
@@ -71,7 +74,7 @@ const createEmployee = async (event) => {
         leaveStructure: requestBody.leaveStructure || null,
         createdDateTime: formattedDate,
         updatedDateTime: requestBody.updatedDateTime || null,
-        department: requestBody.department || null
+        department: requestBody.department || null,
       }),
     };
     const createResult = await client.send(new PutItemCommand(params));
@@ -95,28 +98,28 @@ const createEmployee = async (event) => {
 const isEmployeeIdExists = async (employeeId) => {
   const params = {
     TableName: process.env.EMPLOYEE_TABLE,
-    Key: { employeeId: { S: employeeId } }
+    Key: { employeeId: { S: employeeId } },
   };
   const { Item } = await client.send(new GetItemCommand(params));
   // If Item is not null, employeeId exists
   return !!Item;
 };
 
-// const isEmailExists = async (emailAddress) => {
-//   const params = {
-//     TableName: process.env.EMPLOYEE_TABLE,
-//     IndexName: 'officeEmailAddress-index', // Assuming 'officeEmailAddress' is indexed
-//     KeyConditionExpression: 'officeEmailAddress = :email',
-//     ExpressionAttributeValues: {
-//       ':email': { S: emailAddress }
-//     },
-//     ProjectionExpression: 'officeEmailAddress'
-//   };
-//   const command = new QueryCommand(params);
-//   const data = await client.send(command); // If there are items, email exists
-//   return data.Items.length > 0;
-// };
+const isEmailExists = async (emailAddress) => {
+  const params = {
+    TableName: process.env.EMPLOYEE_TABLE,
+    FilterExpression: "officeEmailAddress = :email",
+    ExpressionAttributeValues: {
+      ":email": { S: emailAddress },
+    },
+    ProjectionExpression: "officeEmailAddress",
+  };
+
+  const command = new ScanCommand(params);
+  const data = await client.send(command);
+  return data.Items.length > 0;
+};
 
 module.exports = {
-  createEmployee
+  createEmployee,
 };

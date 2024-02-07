@@ -12,11 +12,6 @@ const validateEmployeeDetails = (requestBody) => {
     return true;
 };
 
-const isValidOfficeEmailAddress = (emailAddress) => {
-    return emailAddress.endsWith('.hyniva.com');
-};
-
 module.exports = {
     validateEmployeeDetails,
-    isValidOfficeEmailAddress
 };
