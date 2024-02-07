@@ -36,10 +36,10 @@ const createEmployee = async (event) => {
     }
 
     // Check if the email address already exists
-    const emailExists = await isEmailExists(requestBody.officeEmailAddress);
-    if (emailExists) {
-      throw new Error('Email address already exists.');
-    }
+    // const emailExists = await isEmailExists(requestBody.officeEmailAddress);
+    // if (emailExists) {
+    //   throw new Error('Email address already exists.');
+    // }
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
@@ -102,20 +102,20 @@ const isEmployeeIdExists = async (employeeId) => {
   return !!Item;
 };
 
-const isEmailExists = async (emailAddress) => {
-  const params = {
-    TableName: process.env.EMPLOYEE_TABLE,
-    IndexName: 'officeEmailAddress-index', // Assuming 'officeEmailAddress' is indexed
-    KeyConditionExpression: 'officeEmailAddress = :email',
-    ExpressionAttributeValues: {
-      ':email': { S: emailAddress }
-    },
-    ProjectionExpression: 'officeEmailAddress'
-  };
-  const command = new QueryCommand(params);
-  const data = await client.send(command); // If there are items, email exists
-  return data.Items.length > 0;
-};
+// const isEmailExists = async (emailAddress) => {
+//   const params = {
+//     TableName: process.env.EMPLOYEE_TABLE,
+//     IndexName: 'officeEmailAddress-index', // Assuming 'officeEmailAddress' is indexed
+//     KeyConditionExpression: 'officeEmailAddress = :email',
+//     ExpressionAttributeValues: {
+//       ':email': { S: emailAddress }
+//     },
+//     ProjectionExpression: 'officeEmailAddress'
+//   };
+//   const command = new QueryCommand(params);
+//   const data = await client.send(command); // If there are items, email exists
+//   return data.Items.length > 0;
+// };
 
 module.exports = {
   createEmployee

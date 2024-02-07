@@ -15,10 +15,10 @@ provider:
         - "dynamodb:GetItem"
         - "dynamodb:Scan"
         - "dynamodb:DeleteItem"
-        - "dynamodb:Query"
+        # - "dynamodb:Query"
       Resource:
         - !GetAtt EmployeeTable.Arn
-        - !Sub "${EmployeeTable.Arn}/index/officeEmailAddress-index" # Add this line to allow Query on the index
+        # - !Sub "${EmployeeTable.Arn}/index/officeEmailAddress-index" # Add this line to allow Query on the index
 
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
@@ -46,18 +46,9 @@ resources:
         AttributeDefinitions:
           - AttributeName: employeeId
             AttributeType: S
-          - AttributeName: officeEmailAddress
-            AttributeType: S
         KeySchema:
           - AttributeName: employeeId
             KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: officeEmailAddress-index
-            KeySchema:
-              - AttributeName: officeEmailAddress
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
