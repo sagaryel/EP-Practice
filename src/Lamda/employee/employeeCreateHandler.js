@@ -1,6 +1,7 @@
 const {
   DynamoDBClient,
   PutItemCommand,
+  QueryCommand,
   UpdateItemCommand,
   GetItemCommand,
 } = require('@aws-sdk/client-dynamodb');
@@ -111,8 +112,9 @@ const isEmailExists = async (emailAddress) => {
     },
     ProjectionExpression: 'officeEmailAddress'
   };
-  const data = await dynamodb.query(params).promise();
-  return data.Items.length > 0; // If there are items, email exists
+  const command = new QueryCommand(params);
+  const data = await client.send(command); // If there are items, email exists
+  return data.Items.length > 0;
 };
 
 module.exports = {
