@@ -104,7 +104,7 @@ const isEmployeeIdExists = async (employeeId) => {
 
 const isEmailExists = async (emailAddress) => {
   const params = {
-    TableName: 'employee_details',
+    TableName: process.env.EMPLOYEE_TABLE,
     IndexName: 'officeEmailAddress-index', // Assuming 'officeEmailAddress' is indexed
     KeyConditionExpression: 'officeEmailAddress = :email',
     ExpressionAttributeValues: {
