@@ -154,8 +154,8 @@ async function getCurrentSerialNumber() {
       TableName: process.env.EMPLOYEE_TABLE,
       Key: { id: 'SerialNumber' }
   };
-  const updateCommand = new UpdateItemCommand(params);
-  const result = await client.get(updateCommand);
+  const getItemCommand = new GetItemCommand(params);
+  const result = await client.send(getItemCommand);
   return result.Item ? result.Item.value : 0;
 }
 
