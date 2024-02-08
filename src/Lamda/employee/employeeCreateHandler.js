@@ -141,6 +141,7 @@ async function getHighestSerialNumber() {
     return parseInt(result.Items[0].serialNumber.N || 0); // Parse the serialNumber as an integer
   }
 }
+
 module.exports = {
   createEmployee,
 };
