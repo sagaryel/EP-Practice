@@ -127,17 +127,19 @@ async function generateSerialNumber() {
   try {
     // Define parameters for DynamoDB operation
     const params = {
-      TableName: process.env.EMPLOYEE_TABLE, // Replace with your table name
-      Key: { id: 'unique_key' },      // Replace 'unique_key' with a unique identifier for your serial number record
-      UpdateExpression: 'SET serialNumber = if_not_exists(serialNumber, :start)',
+      TableName: process.env.EMPLOYEE_TABLE,
+      Key: { id: 'unique_key' },
+      UpdateExpression: 'SET serialNumber = if_not_exists(serialNumber, :start) + :incr',
       ExpressionAttributeValues: { 
-        ':start': 1  // Start serialNumber from 1 if it doesn't exist
+        ':start': 1, // Start serialNumber from 1 if it doesn't exist
+        ':incr': 2
       },
       ReturnValues: 'UPDATED_NEW'
     };
 
     // Update the serial number atomically
-    const { Attributes } = await client.send(new UpdateItemCommand(params));
+    const updateCommand = new UpdateItemCommand(params);
+    const { Attributes } = await client.send(updateCommand);
 
     return Attributes.serialNumber;
   } catch (error) {
