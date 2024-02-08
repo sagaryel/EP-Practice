@@ -44,15 +44,15 @@ const createEmployee = async (event) => {
       throw new Error("Email address already exists.");
     }
 
-    // Fetch the highest employeeId from the DynamoDB table
-    const highestEmployeeId = await getHighestEmployeeId();
-    const nextEmployeeId = highestEmployeeId + 1 || 1;
+    // Fetch the highest highestSerialNumber from the DynamoDB table
+    const highestSerialNumber = await getHighestSerialNumber();
+    const nextSerialNumber = highestSerialNumber + 1 || 1;
 
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
-        serialNumber: nextEmployeeId,
+        serialNumber: nextSerialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -126,7 +126,7 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
-async function getHighestEmployeeId() {
+async function getHighestSerialNumber() {
   const params = {
     TableName: process.env.EMPLOYEE_TABLE,
     ProjectionExpression: 'serialNumber',
