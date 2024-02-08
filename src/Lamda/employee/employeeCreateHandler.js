@@ -135,10 +135,10 @@ async function getHighestSerialNumber() {
   };
 
   const result = await client.send(new ScanCommand(params));
-  if (result.Items.length === 0) {
-    return 0; // If no records found, start from 0
+  if (result.Items.length === 0 || !result.Items[0].serialNumber) {
+    return 0; // If no records found or serialNumber attribute missing, start from 0
   } else {
-    return parseInt(result.Items[0].serialNumber.N)
+    return parseInt(result.Items[0].serialNumber.N || 0); // Parse the serialNumber as an integer
   }
 }
 module.exports = {
