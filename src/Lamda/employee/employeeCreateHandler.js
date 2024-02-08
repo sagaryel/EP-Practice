@@ -44,13 +44,15 @@ const createEmployee = async (event) => {
       throw new Error("Email address already exists.");
     }
 
-    const currentSerialNumber = await getCurrentSerialNumber();
-    const newSerialNumber = generateNextSerialNumber(currentSerialNumber);
+    // Fetch the highest employeeId from the DynamoDB table
+    const highestEmployeeId = await getHighestEmployeeId();
+    const nextEmployeeId = highestEmployeeId + 1 || 1;
+
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
-        serialNumber: newSerialNumber,
+        serialNumber: nextEmployeeId,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -124,44 +126,20 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
-// async function generateSerialNumber() {
-//   try {
-//     // Define parameters for DynamoDB operation
-//     const params = {
-//       TableName: process.env.EMPLOYEE_TABLE,
-//       Key: { id: 'serialNumber' },
-//       UpdateExpression: 'SET serialNumber = if_not_exists(serialNumber, :start) + :incr',
-//       ExpressionAttributeValues: { 
-//         ':start': 1, // Start serialNumber from 1 if it doesn't exist
-//         ':incr': 2
-//       },
-//       ReturnValues: 'UPDATED_NEW'
-//     };
-
-//     // Update the serial number atomically
-//     const updateCommand = new UpdateItemCommand(params);
-//     const { Attributes } = await client.send(updateCommand);
-
-//     return Attributes.serialNumber;
-//   } catch (error) {
-//     console.error('Error generating serial number:', error);
-//     throw error;
-//   }
-// }
-
-async function getCurrentSerialNumber() {
+async function getHighestEmployeeId() {
   const params = {
-      TableName: process.env.EMPLOYEE_TABLE,
-      Key: { id: 'SerialNumber' }
+    TableName: process.env.EMPLOYEE_TABLE,
+    ProjectionExpression: 'serialNumber',
+    ScanIndexForward: false,
+    Limit: 1,
   };
-  const getItemCommand = new GetItemCommand(params);
-  const result = await client.send(getItemCommand);
-  return result.Item ? result.Item.value : 0;
-}
 
-// Function to generate the next serial number
-function generateNextSerialNumber(currentSerialNumber) {
-  return currentSerialNumber + 1;
+  const result = await client.send(new ScanCommand(params));
+  if (result.Items.length === 0) {
+    return 0; // If no records found, start from 0
+  } else {
+    return result.Items[0].serialNumber;
+  }
 }
 module.exports = {
   createEmployee,
