@@ -137,7 +137,7 @@ async function generateSerialNumber() {
     };
 
     // Update the serial number atomically
-    const { Attributes } = await dynamoDB.update(params).promise();
+    const { Attributes } = await client.update(params).promise();
 
     return Attributes.serialNumber;
   } catch (error) {
