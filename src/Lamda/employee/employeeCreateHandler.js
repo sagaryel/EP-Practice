@@ -44,13 +44,13 @@ const createEmployee = async (event) => {
       throw new Error("Email address already exists.");
     }
 
-    const currentSerialNumber = await getCurrentSerialNumber();
-    const newSerialNumber = generateNextSerialNumber(currentSerialNumber);
+    // const currentSerialNumber = await getCurrentSerialNumber();
+    // const newSerialNumber = generateNextSerialNumber(currentSerialNumber);
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
-        serialNumber: newSerialNumber,
+        // serialNumber: newSerialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -149,20 +149,20 @@ const isEmailExists = async (emailAddress) => {
 //   }
 // }
 
-async function getCurrentSerialNumber() {
-  const params = {
-      TableName: process.env.EMPLOYEE_TABLE,
-      Key: { id: 'SerialNumber' }
-  };
-  const getItemCommand = new GetItemCommand(params);
-  const result = await client.send(getItemCommand);
-  return result.Item ? result.Item.value : 0;
-}
+// async function getCurrentSerialNumber() {
+//   const params = {
+//       TableName: process.env.EMPLOYEE_TABLE,
+//       Key: { id: 'SerialNumber' }
+//   };
+//   const getItemCommand = new GetItemCommand(params);
+//   const result = await client.send(getItemCommand);
+//   return result.Item ? result.Item.value : 0;
+// }
 
-// Function to generate the next serial number
-function generateNextSerialNumber(currentSerialNumber) {
-  return currentSerialNumber + 1;
-}
+// // Function to generate the next serial number
+// function generateNextSerialNumber(currentSerialNumber) {
+//   return currentSerialNumber + 1;
+// }
 module.exports = {
   createEmployee,
 };
