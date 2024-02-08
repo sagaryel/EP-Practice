@@ -138,7 +138,7 @@ async function getHighestEmployeeId() {
   if (result.Items.length === 0) {
     return 0; // If no records found, start from 0
   } else {
-    return result.Items[0].serialNumber;
+    return parseInt(result.Items[0].serialNumber.N)
   }
 }
 module.exports = {
