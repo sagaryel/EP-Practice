@@ -44,9 +44,12 @@ const createEmployee = async (event) => {
       throw new Error("Email address already exists.");
     }
 
+    const serialNumber = await generateSerialNumber();
+
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
+        serialNumber: serialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -120,6 +123,28 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
+async function generateSerialNumber() {
+  try {
+    // Define parameters for DynamoDB operation
+    const params = {
+      TableName: process.env.EMPLOYEE_TABLE, // Replace with your table name
+      Key: { id: 'unique_key' },      // Replace 'unique_key' with a unique identifier for your serial number record
+      UpdateExpression: 'SET serialNumber = if_not_exists(serialNumber, :start)',
+      ExpressionAttributeValues: { 
+        ':start': 1  // Start serialNumber from 1 if it doesn't exist
+      },
+      ReturnValues: 'UPDATED_NEW'
+    };
+
+    // Update the serial number atomically
+    const { Attributes } = await dynamoDB.update(params).promise();
+
+    return Attributes.serialNumber;
+  } catch (error) {
+    console.error('Error generating serial number:', error);
+    throw error;
+  }
+}
 module.exports = {
   createEmployee,
 };
