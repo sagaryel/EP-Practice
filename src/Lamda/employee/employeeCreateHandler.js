@@ -44,12 +44,13 @@ const createEmployee = async (event) => {
       throw new Error("Email address already exists.");
     }
 
-    const serialNumber = await generateSerialNumber();
+    const currentSerialNumber = await getCurrentSerialNumber();
+    const newSerialNumber = generateNextSerialNumber(currentSerialNumber);
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
-        serialNumber: serialNumber,
+        serialNumber: newSerialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -123,29 +124,44 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
-async function generateSerialNumber() {
-  try {
-    // Define parameters for DynamoDB operation
-    const params = {
+// async function generateSerialNumber() {
+//   try {
+//     // Define parameters for DynamoDB operation
+//     const params = {
+//       TableName: process.env.EMPLOYEE_TABLE,
+//       Key: { id: 'serialNumber' },
+//       UpdateExpression: 'SET serialNumber = if_not_exists(serialNumber, :start) + :incr',
+//       ExpressionAttributeValues: { 
+//         ':start': 1, // Start serialNumber from 1 if it doesn't exist
+//         ':incr': 2
+//       },
+//       ReturnValues: 'UPDATED_NEW'
+//     };
+
+//     // Update the serial number atomically
+//     const updateCommand = new UpdateItemCommand(params);
+//     const { Attributes } = await client.send(updateCommand);
+
+//     return Attributes.serialNumber;
+//   } catch (error) {
+//     console.error('Error generating serial number:', error);
+//     throw error;
+//   }
+// }
+
+async function getCurrentSerialNumber() {
+  const params = {
       TableName: process.env.EMPLOYEE_TABLE,
-      Key: { id: 'unique_key' },
-      UpdateExpression: 'SET serialNumber = if_not_exists(serialNumber, :start) + :incr',
-      ExpressionAttributeValues: { 
-        ':start': 1, // Start serialNumber from 1 if it doesn't exist
-        ':incr': 2
-      },
-      ReturnValues: 'UPDATED_NEW'
-    };
+      Key: { id: 'SerialNumber' }
+  };
+  const updateCommand = new UpdateItemCommand(params);
+  const result = await client.get(updateCommand);
+  return result.Item ? result.Item.value : 0;
+}
 
-    // Update the serial number atomically
-    const updateCommand = new UpdateItemCommand(params);
-    const { Attributes } = await client.send(updateCommand);
-
-    return Attributes.serialNumber;
-  } catch (error) {
-    console.error('Error generating serial number:', error);
-    throw error;
-  }
+// Function to generate the next serial number
+function generateNextSerialNumber(currentSerialNumber) {
+  return currentSerialNumber + 1;
 }
 module.exports = {
   createEmployee,
