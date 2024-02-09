@@ -136,14 +136,14 @@ const getHighestSerialNumber = async () => {
     ScanIndexForward: false, // Sort in descending order
     KeyConditionExpression: "serialNumber > :num",
     ExpressionAttributeValues: {
-      ":num": 0 // Assuming serialNumber starts from 1, adjust if different
+      ":num": { N: "0" } // Assuming serialNumber starts from 1, adjust if different
     }
   };
 
   try {
-    const data = await dynamodb.query(params).promise();
+    const data = await client.send(new QueryCommand(params)); // Use client to send QueryCommand
     if (data.Count > 0) {
-      return data.Items[0].serialNumber.N; // Assuming serialNumber is a Number attribute
+      return parseInt(data.Items[0].serialNumber.N); // Assuming serialNumber is a Number attribute
     }
     return undefined; // Return undefined if no records found
   } catch (error) {
