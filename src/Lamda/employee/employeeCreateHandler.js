@@ -133,7 +133,7 @@ async function getHighestSerialNumber() {
     TableName: process.env.EMPLOYEE_TABLE,
     ProjectionExpression: 'serialNumber',
     Limit: 1,
-    ScanIndexForward: true, // Sort in descending order to get the highest serial number first
+    //ScanIndexForward: true, // Sort in descending order to get the highest serial number first
   };
 
   try {
