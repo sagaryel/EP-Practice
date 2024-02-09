@@ -49,6 +49,7 @@ const createEmployee = async (event) => {
     const nextSerialNumber = highestSerialNumber !== undefined ? highestSerialNumber + 1 : 1;
 
 
+
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
@@ -137,11 +138,10 @@ async function getHighestSerialNumber() {
   try {
     const result = await client.send(new ScanCommand(params));
     if (result.Items.length === 0) {
-      return 0; // If no records found, start from 0
+      return undefined; // If no records found, return undefined
     } else {
-      // Parse the highest serial number and increment it by 1
-      const highestSerialNumber = parseInt(result.Items[0].serialNumber.N);
-      return highestSerialNumber + 1;
+      // Parse and return the highest serial number without incrementing
+      return parseInt(result.Items[0].serialNumber.N);
     }
   } catch (error) {
     console.error("Error retrieving highest serial number:", error);
