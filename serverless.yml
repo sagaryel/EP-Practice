@@ -47,7 +47,7 @@ resources:
           - AttributeName: employeeId
             AttributeType: S
           - AttributeName: createdDateTime
-            AttributeType: N  # Use N for number (timestamp)
+            AttributeType: S  # Use N for number (timestamp)
         KeySchema:
           - AttributeName: employeeId
             KeyType: HASH
