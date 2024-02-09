@@ -131,17 +131,17 @@ const isEmailExists = async (emailAddress) => {
 const getHighestSerialNumber = async () => {
   const params = {
     TableName: process.env.EMPLOYEE_TABLE,
-    ProjectionExpression: "serialNumber",
-    Limit: 1,
-    ScanIndexForward: false, // Sort in descending order
-    KeyConditionExpression: "serialNumber > :num",
+    KeyConditionExpression: "employeeId > :num", // Query condition on employeeId
     ExpressionAttributeValues: {
-      ":num": { N: "0" } // Assuming serialNumber starts from 1, adjust if different
-    }
+      ":num": { S: "1" } // Assuming employeeId starts from "0", adjust if different
+    },
+    ProjectionExpression: "serialNumber", // Projection to retrieve only the serialNumber attribute
+    Limit: 1,
+    ScanIndexForward: false // Sort in descending order
   };
 
   try {
-    const data = await client.send(new QueryCommand(params)); // Use client to send QueryCommand
+    const data = await client.send(new QueryCommand(params));
     if (data.Count > 0) {
       return parseInt(data.Items[0].serialNumber.N); // Assuming serialNumber is a Number attribute
     }
