@@ -22,7 +22,7 @@ plugins:
   - serverless-iam-roles-per-function
 functions:
   employeeCreate:
-    handler: src/Lamda/employee/employeeHandler.createEmployee
+    handler: src/Lamda/employee/employeeCreateHandler.createEmployee
     name: employeeCreate
     memorySize: 128
     timeout: 120
