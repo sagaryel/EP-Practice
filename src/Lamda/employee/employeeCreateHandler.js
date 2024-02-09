@@ -15,7 +15,8 @@ const {
 } = require("../../environment/appconfig");
 const { validateEmployeeDetails } = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
-const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
+//const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
+const createdDateTime = new Date().toISOString();
 
 const createEmployee = async (event) => {
   console.log("inside the create employee details");
@@ -79,7 +80,7 @@ const createEmployee = async (event) => {
         resignedDate: requestBody.resignedDate || null,
         relievedDate: requestBody.relievedDate || null,
         leaveStructure: requestBody.leaveStructure || null,
-        createdDateTime: formattedDate,
+        createdDateTime: createdDateTime,
         updatedDateTime: requestBody.updatedDateTime || null,
         department: requestBody.department || null,
       }),

@@ -46,9 +46,13 @@ resources:
         AttributeDefinitions:
           - AttributeName: employeeId
             AttributeType: S
+          - AttributeName: createdDateTime
+            AttributeType: S
         KeySchema:
           - AttributeName: employeeId
             KeyType: HASH
+          - AttributeName: createdDateTime
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
