@@ -1,3 +1,4 @@
+service: employee-portal-service
 provider:
   name: aws
   runtime: nodejs18.x
