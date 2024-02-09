@@ -46,7 +46,7 @@ const createEmployee = async (event) => {
 
     // Fetch the highest highestSerialNumber from the DynamoDB table
     const highestSerialNumber = await getHighestSerialNumber();
-    const nextSerialNumber = highestSerialNumber + 1 || 1;
+    const nextSerialNumber = highestSerialNumber !== undefined ? highestSerialNumber + 1 : 1;
 
 
     const params = {
@@ -130,15 +130,22 @@ async function getHighestSerialNumber() {
   const params = {
     TableName: process.env.EMPLOYEE_TABLE,
     ProjectionExpression: 'serialNumber',
-    ScanIndexForward: false,
     Limit: 1,
+    ScanIndexForward: false, // Sort in descending order to get the highest serial number first
   };
 
-  const result = await client.send(new ScanCommand(params));
-  if (result.Items.length === 0 || !result.Items[0].serialNumber) {
-    return 0; // If no records found or serialNumber attribute missing, start from 0
-  } else {
-    return parseInt(result.Items[0].serialNumber.N || 0); // Parse the serialNumber as an integer
+  try {
+    const result = await client.send(new ScanCommand(params));
+    if (result.Items.length === 0) {
+      return 0; // If no records found, start from 0
+    } else {
+      // Parse the highest serial number and increment it by 1
+      const highestSerialNumber = parseInt(result.Items[0].serialNumber.N);
+      return highestSerialNumber + 1;
+    }
+  } catch (error) {
+    console.error("Error retrieving highest serial number:", error);
+    throw error; // Propagate the error up the call stack
   }
 }
 
