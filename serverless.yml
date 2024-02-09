@@ -44,10 +44,10 @@ resources:
       Properties:
         TableName: ${self:custom.employeeTableName}
         AttributeDefinitions:
-          - AttributeName: employeeId
-            AttributeType: S
+          - AttributeName: serialNumber
+            AttributeType: N
         KeySchema:
-          - AttributeName: employeeId
+          - AttributeName: serialNumber
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
