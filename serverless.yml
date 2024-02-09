@@ -1,9 +1,8 @@
-service: employee-portal-service
 provider:
   name: aws
   runtime: nodejs18.x
   stage: dev
-  region: us-east-2
+  region: us-east-1
   environment:
     EMPLOYEE_TABLE: ${self:custom.employeeTableName}
   iamRoleStatements:
@@ -16,10 +15,14 @@ provider:
         - "dynamodb:DeleteItem"
       Resource:
         - !GetAtt EmployeeTable.Arn
+        # - !Sub "${EmployeeTable.Arn}/index/officeEmailAddress-index" # Add this line to allow Query on the index
+
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
+
 plugins:
   - serverless-iam-roles-per-function
+
 functions:
   employeeCreate:
     handler: src/Lamda/employee/employeeCreateHandler.createEmployee
@@ -30,6 +33,7 @@ functions:
       - http:
           path: employee
           method: POST
+
 resources:
   Resources:
     EmployeeTable:
@@ -37,10 +41,10 @@ resources:
       Properties:
         TableName: ${self:custom.employeeTableName}
         AttributeDefinitions:
-          - AttributeName: serialNumber
+          - AttributeName: employeeId
             AttributeType: S
         KeySchema:
-          - AttributeName: serialNumber
+          - AttributeName: employeeId
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
