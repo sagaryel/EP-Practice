@@ -46,13 +46,9 @@ resources:
         AttributeDefinitions:
           - AttributeName: employeeId
             AttributeType: S
-          - AttributeName: createdDateTime
-            AttributeType: S  # Use N for number (timestamp)
         KeySchema:
           - AttributeName: employeeId
             KeyType: HASH
-          - AttributeName: createdDateTime
-            KeyType: RANGE  # Sort key
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
