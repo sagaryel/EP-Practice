@@ -128,27 +128,29 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
-async function getHighestSerialNumber() {
+const getHighestSerialNumber = async () => {
   const params = {
     TableName: process.env.EMPLOYEE_TABLE,
-    ProjectionExpression: 'serialNumber',
+    ProjectionExpression: "serialNumber",
     Limit: 1,
-    //ScanIndexForward: true, // Sort in descending order to get the highest serial number first
+    ScanIndexForward: false, // Sort in descending order
+    KeyConditionExpression: "serialNumber > :num",
+    ExpressionAttributeValues: {
+      ":num": 0 // Assuming serialNumber starts from 1, adjust if different
+    }
   };
 
   try {
-    const result = await client.send(new ScanCommand(params));
-    if (result.Items.length === 0) {
-      return undefined; // If no records found, return undefined
-    } else {
-      // Parse and return the highest serial number without incrementing
-      return parseInt(result.Items[0].serialNumber.N);
+    const data = await dynamodb.query(params).promise();
+    if (data.Count > 0) {
+      return data.Items[0].serialNumber.N; // Assuming serialNumber is a Number attribute
     }
+    return undefined; // Return undefined if no records found
   } catch (error) {
-    console.error("Error retrieving highest serial number:", error);
-    throw error; // Propagate the error up the call stack
+    console.error("Error fetching highest serial number:", error);
+    throw error;
   }
-}
+};
 
 module.exports = {
   createEmployee,
