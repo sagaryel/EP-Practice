@@ -23,7 +23,7 @@ const createEmployee = async (event) => {
   const response = { statusCode: httpStatusCodes.SUCCESS };
   try {
     const requestBody = JSON.parse(event.body);
-    requestBody.createdDateTime = new Date().toISOString();
+    
     // Check for required fields
     // const requiredFields = ['employeeId', 'firstName', 'lastName', 'dateOfBirth', 'officeEmailAddress', 'branchOffice'];
     // if (!requiredFields.every(field => requestBody[field])) {
@@ -80,6 +80,7 @@ const createEmployee = async (event) => {
         resignedDate: requestBody.resignedDate || null,
         relievedDate: requestBody.relievedDate || null,
         leaveStructure: requestBody.leaveStructure || null,
+        createdDateTime: createdDateTime,
         updatedDateTime: requestBody.updatedDateTime || null,
         department: requestBody.department || null,
       }),
