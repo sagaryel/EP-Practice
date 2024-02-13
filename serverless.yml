@@ -44,7 +44,7 @@ functions:
           path: assignment
           method: POST
   assignmentGet:
-    handler: src/Lamda/assignment/employeeCreateHandler.getAssignmentsByEmployeeId
+    handler: src/Lamda/employee/employeeCreateHandler.getAssignmentsByEmployeeId
     name: assignmentGet
     memorySize: 128
     timeout: 120
