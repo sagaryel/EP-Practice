@@ -161,12 +161,13 @@ const getAssignmentsByEmployeeId = async (event) => {
       TableName: process.env.ASSIGNMENTS_TABLE,
       FilterExpression: 'employeeId = :employeeId',
       ExpressionAttributeValues: {
-        ':employeeId': employeeId
+        ':employeeId': { S: employeeId } // Assuming employeeId is a string, adjust accordingly if not
       }
     };
-    const data = await dynamodb.scan(params).promise();
-    console.log({ data });
-    if (!data.Items || data.Items.length === 0) {
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
+
+    if (!Items || Items.length === 0) {
       console.log("Assignments for employee not found.");
       response.statusCode = httpStatusCodes.NOT_FOUND;
       response.body = JSON.stringify({
@@ -176,16 +177,16 @@ const getAssignmentsByEmployeeId = async (event) => {
       console.log("Successfully retrieved assignments for employee.");
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
-        data: data.Items.map(item => ({
-          designation: item.designation,
-          department: item.department,
-          coreTechnology: item.coreTechnology,
-          framework: item.framework,
-          branchOffice: item.branchOffice,
-          AssignedProject: item.AssignedProject,
-          reportingManager: item.reportingManager,
-          onsite: item.onsite,
-          billableResource: item.billableResource
+        data: Items.map(item => ({
+          designation: item.designation.S,
+          department: item.department.S,
+          coreTechnology: item.coreTechnology.S,
+          framework: item.framework.S,
+          branchOffice: item.branchOffice.S,
+          AssignedProject: item.AssignedProject.S,
+          reportingManager: item.reportingManager.S,
+          onsite: item.onsite.BOOL,
+          billableResource: item.billableResource.BOOL
         }))
       });
     }
