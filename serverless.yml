@@ -35,7 +35,7 @@ functions:
           path: employee/get/{employeeId}
           method: GET
   employeeCreate:
-    handler: src/Lamda/employee/employeeHandler.createEmployee
+    handler: src/Lamda/employee/employeeCreateHandler.createEmployee
     name: employeeCreate
     memorySize: 128
     timeout: 120
