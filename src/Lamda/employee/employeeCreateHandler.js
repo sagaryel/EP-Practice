@@ -54,7 +54,6 @@ const createEmployee = async (event) => {
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
-        serialNumber: nextSerialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
