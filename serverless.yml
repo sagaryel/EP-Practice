@@ -43,6 +43,15 @@ functions:
       - http:
           path: assignment
           method: POST
+  assignmentGet:
+    handler: src/Lamda/assignment/employeeCreateHandler.getAssignmentsByEmployeeId
+    name: assignmentGet
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: assignment/{employeeId}
+          method: GET
 resources:
   Resources:
     EmployeeTable:

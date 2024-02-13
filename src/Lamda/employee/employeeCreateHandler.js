@@ -151,6 +151,56 @@ const isEmailExists = async (emailAddress) => {
 //   }
 // };
 
+const getAssignmentsByEmployeeId = async (event) => {
+  console.log("Fetching assignments details by employee ID");
+  const employeeId = event.pathParameters.employeeId;
+
+  const response = { statusCode: httpStatusCodes.SUCCESS };
+  try {
+    const params = {
+      TableName: process.env.ASSIGNMENTS_TABLE,
+      FilterExpression: 'employeeId = :employeeId',
+      ExpressionAttributeValues: {
+        ':employeeId': employeeId
+      }
+    };
+    const data = await dynamodb.scan(params).promise();
+    console.log({ data });
+    if (!data.Items || data.Items.length === 0) {
+      console.log("Assignments for employee not found.");
+      response.statusCode = httpStatusCodes.NOT_FOUND;
+      response.body = JSON.stringify({
+        message: httpStatusMessages.ASSIGNMENTS_NOT_FOUND_FOR_EMPLOYEE,
+      });
+    } else {
+      console.log("Successfully retrieved assignments for employee.");
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
+        data: data.Items.map(item => ({
+          designation: item.designation,
+          department: item.department,
+          coreTechnology: item.coreTechnology,
+          framework: item.framework,
+          branchOffice: item.branchOffice,
+          AssignedProject: item.AssignedProject,
+          reportingManager: item.reportingManager,
+          onsite: item.onsite,
+          billableResource: item.billableResource
+        }))
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    response.statusCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
+    response.body = JSON.stringify({
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_ASSIGNMENTS,
+      error: error.message
+    });
+  }
+  return response;
+};
+
 module.exports = {
   createEmployee,
+  getAssignmentsByEmployeeId
 };
