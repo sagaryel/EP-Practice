@@ -178,15 +178,15 @@ const getAssignmentsByEmployeeId = async (event) => {
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
         data: Items.map(item => ({
-          designation: item.designation.S,
-          department: item.department.S,
-          coreTechnology: item.coreTechnology.S,
-          framework: item.framework.S,
-          branchOffice: item.branchOffice.S,
-          AssignedProject: item.AssignedProject.S,
-          reportingManager: item.reportingManager.S,
-          onsite: item.onsite.BOOL,
-          billableResource: item.billableResource.BOOL
+          designation: item.designation,
+          department: item.department,
+          coreTechnology: item.coreTechnology,
+          framework: item.framework,
+          branchOffice: item.branchOffice,
+          AssignedProject: item.AssignedProject,
+          reportingManager: item.reportingManager,
+          onsite: item.onsite,
+          billableResource: item.billableResource
         }))
       });
     }
