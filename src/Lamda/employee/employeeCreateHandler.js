@@ -141,7 +141,8 @@ async function getHighestSerialNumber() {
   };
 
   try {
-    const data = await dynamodb.query(params).promise();
+    const command = new ScanCommand(params);
+    const data = await client.send(command);
     if (data.Items.length > 0) {
       return parseInt(data.Items[0].serialNumber.N); // Assuming serialNumber is stored as a number
     } else {
