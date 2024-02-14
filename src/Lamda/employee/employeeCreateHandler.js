@@ -46,14 +46,15 @@ const createEmployee = async (event) => {
     }
 
     // Fetch the highest highestSerialNumber from the DynamoDB table
-    // const highestSerialNumber = await getHighestSerialNumber();
-    // const nextSerialNumber = highestSerialNumber !== undefined ? highestSerialNumber + 1 : 1;
+    const highestSerialNumber = await getHighestSerialNumber();
+    const nextSerialNumber = highestSerialNumber !== undefined ? highestSerialNumber + 1 : 1;
 
 
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
+        serialNumber:nextSerialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -127,29 +128,30 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
-// const getHighestSerialNumber = async () => {
-//   const params = {
-//     TableName: process.env.EMPLOYEE_TABLE,
-//     KeyConditionExpression: "employeeId > :num", // Query condition on employeeId
-//     ExpressionAttributeValues: {
-//       ":num": { S: "1" } // Assuming employeeId starts from "0", adjust if different
-//     },
-//     ProjectionExpression: "serialNumber", // Projection to retrieve only the serialNumber attribute
-//     Limit: 1,
-//     ScanIndexForward: false // Sort in descending order
-//   };
+async function getHighestSerialNumber() {
+  const params = {
+    TableName: process.env.EMPLOYEE_TABLE,
+    ProjectionExpression: 'serialNumber',
+    Limit: 1,
+    ScanIndexForward: false,
+    KeyConditionExpression: 'serialNumber <> :val',
+    ExpressionAttributeValues: {
+      ':val': { N: '0' }, // Assuming serialNumber is a numeric attribute
+    },
+  };
 
-//   try {
-//     const data = await client.send(new QueryCommand(params));
-//     if (data.Count > 0) {
-//       return parseInt(data.Items[0].serialNumber.N); // Assuming serialNumber is a Number attribute
-//     }
-//     return undefined; // Return undefined if no records found
-//   } catch (error) {
-//     console.error("Error fetching highest serial number:", error);
-//     throw error;
-//   }
-// };
+  try {
+    const data = await dynamodb.query(params).promise();
+    if (data.Items.length > 0) {
+      return parseInt(data.Items[0].serialNumber.N); // Assuming serialNumber is stored as a number
+    } else {
+      return undefined; // No records found
+    }
+  } catch (error) {
+    console.error('Error fetching highest serial number:', error);
+    throw error;
+  }
+}
 
 const getAssignmentsByEmployeeId = async (event) => {
   console.log("Fetching assignments details by employee ID");
