@@ -47,7 +47,8 @@ const createEmployee = async (event) => {
 
     // Fetch the highest highestSerialNumber from the DynamoDB table
     const highestSerialNumber = await getHighestSerialNumber();
-    const nextSerialNumber = highestSerialNumber !== undefined ? highestSerialNumber + 1 : 1;
+    console.log("Highest Serial Number:", highestSerialNumber);
+    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
 
 
@@ -130,23 +131,31 @@ const isEmailExists = async (emailAddress) => {
 
 async function getHighestSerialNumber() {
   const params = {
-    TableName: process.env.EMPLOYEE_TABLE,
-    ProjectionExpression: 'serialNumber',
-    Limit: 1,
-    ScanIndexForward: false,
+    TableName: process.env.ASSIGNMENTS_TABLE,
+    ProjectionExpression: "assignmentId",
+    Limit: 100, // Increase the limit to retrieve more items for sorting
   };
 
   try {
-    const command = new ScanCommand(params);
-    const data = await client.send(command);
-    if (data.Items.length > 0) {
-      return parseInt(data.Items[0].serialNumber.N); // Assuming serialNumber is stored as a number
+    const result = await client.send(new ScanCommand(params));
+   
+    // Sort the items in descending order based on assignmentId
+    const sortedItems = result.Items.sort((a, b) => {
+      return parseInt(b.assignmentId.N) - parseInt(a.assignmentId.N);
+    });
+
+    console.log("Sorted Items:", sortedItems); // Log the sorted items
+
+    if (sortedItems.length === 0) {
+      return 0; // If no records found, return null
     } else {
-      return undefined; // No records found
+      const highestAssignmentId = parseInt(sortedItems[0].assignmentId.N);
+      console.log("Highest Assignment ID:", highestAssignmentId);
+      return highestAssignmentId;
     }
   } catch (error) {
-    console.error('Error fetching highest serial number:', error);
-    throw error;
+    console.error("Error retrieving highest serial number:", error);
+    throw error; // Propagate the error up the call stack
   }
 }
 
