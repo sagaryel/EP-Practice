@@ -3,7 +3,7 @@ const validateEmployeeDetails = (requestBody) => {
     const { employeeId, firstName, lastName, dateOfBirth, officeEmailAddress, branchOffice } = requestBody;
 
     // Check if required fields are missing
-    if (!employeeId || !firstName || !lastName || !dateOfBirth || !officeEmailAddress || !branchOffice) {
+    if (!employeeId || !firstName || !lastName || !dateOfBirth || !officeEmailAddress) {
         return false;
     } else if (!officeEmailAddress.endsWith('@hyniva.com')) {
         throw new Error('Invalid officeEmailAddress domain. It should end with ".hyniva.com".');
