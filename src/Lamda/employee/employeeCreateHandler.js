@@ -134,10 +134,6 @@ async function getHighestSerialNumber() {
     ProjectionExpression: 'serialNumber',
     Limit: 1,
     ScanIndexForward: false,
-    KeyConditionExpression: 'serialNumber <> :val',
-    ExpressionAttributeValues: {
-      ':val': { N: '0' }, // Assuming serialNumber is a numeric attribute
-    },
   };
 
   try {
