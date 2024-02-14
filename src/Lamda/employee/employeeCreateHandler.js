@@ -131,8 +131,8 @@ const isEmailExists = async (emailAddress) => {
 
 async function getHighestSerialNumber() {
   const params = {
-    TableName: process.env.ASSIGNMENTS_TABLE,
-    ProjectionExpression: "assignmentId",
+    TableName: process.env.EMPLOYEE_TABLE,
+    ProjectionExpression: "serialNumber",
     Limit: 100, // Increase the limit to retrieve more items for sorting
   };
 
@@ -141,7 +141,7 @@ async function getHighestSerialNumber() {
    
     // Sort the items in descending order based on assignmentId
     const sortedItems = result.Items.sort((a, b) => {
-      return parseInt(b.assignmentId.N) - parseInt(a.assignmentId.N);
+      return parseInt(b.serialNumber.N) - parseInt(a.serialNumber.N);
     });
 
     console.log("Sorted Items:", sortedItems); // Log the sorted items
@@ -149,9 +149,9 @@ async function getHighestSerialNumber() {
     if (sortedItems.length === 0) {
       return 0; // If no records found, return null
     } else {
-      const highestAssignmentId = parseInt(sortedItems[0].assignmentId.N);
-      console.log("Highest Assignment ID:", highestAssignmentId);
-      return highestAssignmentId;
+      const highestSerialNumber = parseInt(sortedItems[0].serialNumber.N);
+      console.log("Highest Assignment ID:", highestSerialNumber);
+      return highestSerialNumber;
     }
   } catch (error) {
     console.error("Error retrieving highest serial number:", error);
