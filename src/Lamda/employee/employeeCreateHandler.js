@@ -147,7 +147,7 @@ const createEmployee = async (event) => {
         branchOffice: requestBody.branchOffice,
         designation: requestBody.designation,
         onsite: onsite,
-        createdDateTime: formattedDate,
+        createdDateTime: createdDate,
       }),
     };
  
