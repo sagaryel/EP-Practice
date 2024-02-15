@@ -232,17 +232,16 @@ const getAssetByEmployeeId = async (employeeId) => {
   try {
     const params = {
       TableName: process.env.ASSETS_TABLE,
-      KeyConditionExpression: 'employeeId = :eid',
-      ExpressionAttributeValues: {
-        ':eid': { S: employeeId }
+      Key: {
+        employeeId: { S: employeeId }
       }
     };
 
-    const command = new QueryCommand(params);
+    const command = new GetItemCommand(params);
     const result = await client.send(command);
-    
-    if (result.Items && result.Items.length > 0) {
-      return unmarshall(result.Items[0]);
+
+    if (result.Item) {
+      return unmarshall(result.Item);
     }
     return null; // No asset found for the provided employeeId
   } catch (error) {
