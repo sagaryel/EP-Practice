@@ -7,6 +7,7 @@ provider:
   environment:
     EMPLOYEE_TABLE: ${self:custom.employeeTableName}
     ASSIGNMENTS_TABLE: ${self:custom.assignmentTableName}
+    ASSETS_TABLE: ${self:custom.assetTableName}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -19,9 +20,11 @@ provider:
       Resource:
         - !GetAtt EmployeeTable.Arn
         - !GetAtt AssignmentTable.Arn
+        - !GetAtt AssetTable.Arn
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
+  assetTableName: asset-Details-${self:provider.stage}
 plugins:
   - serverless-iam-roles-per-function
 functions:
@@ -52,6 +55,24 @@ functions:
       - http:
           path: assignment/{employeeId}
           method: GET
+  assetCreate:
+    handler: src/Lamda/asset/assetHandler.createAsset
+    name: assetCreate
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: asset
+          method: POST
+  assetUpdate:
+    handler: src/Lamda/employee/employeeCreateHandler.updateAssetDetails
+    name: assetUpdate
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: asset
+          method: PUT
 resources:
   Resources:
     EmployeeTable:

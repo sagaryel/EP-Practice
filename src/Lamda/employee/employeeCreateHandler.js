@@ -61,7 +61,7 @@ const createEmployee = async (event) => {
         lastName: requestBody.lastName,
         dateOfBirth: requestBody.dateOfBirth,
         officeEmailAddress: requestBody.officeEmailAddress,
-        //branchOffice: requestBody.branchOffice,
+        branchOffice: requestBody.branchOffice,
         password: requestBody.password || null,
         gender: requestBody.gender || null,
         ssnNumber: requestBody.ssnNumber || null,
@@ -76,7 +76,7 @@ const createEmployee = async (event) => {
         contactNumber: requestBody.contactNumber || null,
         joiningDate: requestBody.joiningDate || null,
         emergencyContactPerson: requestBody.emergencyContactPerson || null,
-        //designation: requestBody.designation || null,
+        designation: requestBody.designation || null,
         emergencyContactNumber: requestBody.emergencyContactNumber || null,
         resignedDate: requestBody.resignedDate || null,
         relievedDate: requestBody.relievedDate || null,
@@ -87,72 +87,7 @@ const createEmployee = async (event) => {
       }),
     };
     const createResult = await client.send(new PutItemCommand(params));
-
-    const requiredAssignmentFields = [
-      "designation",
-      "branchOffice",
-    ];
-    if (!requiredAssignmentFields.every((field) => requestBody[field])) {
-      throw new Error("Required Assignment Fields are missing.");
-    }
- 
-    // Set onsite based on branchOffice
-    let onsite = "No"; // Default value
-    if (requestBody.branchOffice === "San Antonio, USA") {
-      onsite = "Yes";
-    }
-    if (
-      requestBody.branchOffice === null ||
-      !["San Antonio, USA", "Bangalore, INDIA"].includes(
-        requestBody.branchOffice
-      )
-    ) {
-      throw new Error("Incorrect BranchOffice");
-    }
- 
-    const highestSerialNumber1 = await getHighestSerialNumber();
-    console.log("Highest Serial Number:", highestSerialNumber1);
-    const nextSerialNumber1 =
-      highestSerialNumber !== null ? parseInt(highestSerialNumber1) + 1 : 1;
-      async function getHighestSerialNumber() {
-        const params = {
-          TableName: process.env.ASSIGNMENTS_TABLE,
-          ProjectionExpression: "assignmentId",
-          Limit: 100, // Increase the limit to retrieve more items for sorting
-        };
-        try {
-          const result = await client.send(new ScanCommand(params));
-          // Sort the items in descending order based on assignmentId
-          const sortedItems = result.Items.sort((a, b) => {
-            return parseInt(b.assignmentId.N) - parseInt(a.assignmentId.N);
-          });
-          console.log("Sorted Items:", sortedItems); // Log the sorted items
-          if (sortedItems.length === 0) {
-            return 0; // If no records found, return null
-          } else {
-            const highestAssignmentId = parseInt(sortedItems[0].assignmentId.N);
-            console.log("Highest Assignment ID:", highestAssignmentId);
-            return highestAssignmentId;
-          }
-        } catch (error) {
-          console.error("Error retrieving highest serial number:", error);
-          throw error; // Propagate the error up the call stack
-        }
-      }
-    const assignmentParams = {
-      TableName: process.env.ASSIGNMENTS_TABLE, // Use ASSIGNMENTS_TABLE environment variable
-      Item: marshall({
-        assignmentId: nextSerialNumber1,
-        employeeId: requestBody.employeeId,
-        branchOffice: requestBody.branchOffice,
-        designation: requestBody.designation,
-        onsite: onsite,
-        createdDateTime: createdDate,
-      }),
-    };
- 
-    const createAssignmentResult = await client.send(new PutItemCommand(assignmentParams));
-    response.body = JSON.stringify({
+      response.body = JSON.stringify({
       message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
       createResult,
     });
@@ -264,7 +199,69 @@ const getAssignmentsByEmployeeId = async (event) => {
   return response;
 };
 
+
+const updateAssetDetails = async (event) => {
+  try {
+    const { assetId, employeeId, assetsType, serialNumber, status } = JSON.parse(event.body);
+    const currentDateTime = new Date().toISOString();
+
+    const asset = await getAssetByEmployeeId(employeeId);
+
+    asset.assetId = assetId;
+    asset.assetsType = assetsType;
+    asset.serialNumber = serialNumber;
+    asset.status = status;
+    asset.updatedDateTime = currentDateTime;
+
+    await saveAsset(asset);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(asset)
+    };
+  } catch (error) {
+    console.error("Error updating asset details:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
+};
+
+const getAssetByEmployeeId = async (employeeId) => {
+  try {
+    const params = {
+      TableName: process.env.ASSETS_TABLE,
+      KeyConditionExpression: 'employeeId = :eid',
+      ExpressionAttributeValues: {
+        ':eid': employeeId
+      }
+    };
+
+    const result = await dynamodb.query(params).promise();
+    return result.Items && result.Items.length > 0 ? result.Items[0] : null;
+  } catch (error) {
+    console.error("Error fetching asset data:", error);
+    throw error;
+  }
+};
+
+const saveAsset = async (asset) => {
+  try {
+    const params = {
+      TableName: process.env.ASSETS_TABLE,
+      Item: asset
+    };
+
+    await dynamodb.put(params).promise();
+  } catch (error) {
+    console.error("Error saving asset data:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createEmployee,
-  getAssignmentsByEmployeeId
+  getAssignmentsByEmployeeId,
+  updateAssetDetails
 };
