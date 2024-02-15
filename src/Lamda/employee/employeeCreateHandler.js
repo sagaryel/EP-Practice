@@ -233,7 +233,7 @@ const getAssetByEmployeeId = async (employeeId) => {
     const params = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: { S: employeeId }
+        assetId: { S: assetId }
       }
     };
 
