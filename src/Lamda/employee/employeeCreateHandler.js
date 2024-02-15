@@ -211,7 +211,7 @@ const updateAssetDetails = async (event) => {
     const objKeys = Object.keys(body);
     const params = {
       TableName: process.env.ASSETS_TABLE,
-      Key: marshall({ emp: empId }),
+      Key: marshall({ emp: empId }), // Make sure "emp" matches the primary key attribute name
       UpdateExpression: `SET ${objKeys.map((_, index) => `#key${index} = :value${index}`).join(', ')}, updatedDateTime = :updatedDateTime`,
       ExpressionAttributeNames: objKeys.reduce((acc, key, index) => ({
         ...acc,
