@@ -66,12 +66,12 @@ functions:
           method: POST
   assetUpdate:
     handler: src/Lamda/employee/employeeCreateHandler.updateAssetDetails
-    name: assetUpdate/{employeeId}
+    name: assetUpdate
     memorySize: 128
     timeout: 120
     events:
       - http:
-          path: asset
+          path: asset/{employeeId}
           method: PUT
 resources:
   Resources:
