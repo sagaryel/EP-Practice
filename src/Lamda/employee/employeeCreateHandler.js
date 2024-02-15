@@ -232,9 +232,9 @@ const getAssetByEmployeeId = async (employeeId) => {
   try {
     const params = {
       TableName: process.env.ASSETS_TABLE,
-      FilterExpression: "employeeId = :email",
+      FilterExpression: "employeeId = :id",
       ExpressionAttributeValues: {
-        ":email": { S: emailAddress },
+        ":id": { S: employeeId },
       },
       ProjectionExpression: "employeeId",
     };
