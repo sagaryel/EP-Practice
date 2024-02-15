@@ -232,16 +232,18 @@ const getAssetByEmployeeId = async (employeeId) => {
   try {
     const params = {
       TableName: process.env.ASSETS_TABLE,
-      Key: {
-        employeeId: { S: employeeId }
-      }
+      FilterExpression: "employeeId = :email",
+      ExpressionAttributeValues: {
+        ":email": { S: emailAddress },
+      },
+      ProjectionExpression: "employeeId",
     };
+  
+    const command = new ScanCommand(params);
+    const data = await client.send(command);
 
-    const command = new GetItemCommand(params);
-    const result = await client.send(command);
-
-    if (result.Item) {
-      return unmarshall(result.Item);
+    if (data) {
+      return unmarshall(data);
     }
     return null; // No asset found for the provided employeeId
   } catch (error) {
