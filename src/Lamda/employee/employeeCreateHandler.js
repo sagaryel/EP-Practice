@@ -201,70 +201,46 @@ const getAssignmentsByEmployeeId = async (event) => {
 
 
 const updateAssetDetails = async (event) => {
+  const response = { statusCode: 200 };
   try {
-    const { assetId, employeeId, assetsType, serialNumber, status } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    const empId = event.pathParameters.employeeId;
+    
     const currentDateTime = new Date().toISOString();
 
-    const asset = await getAssetByEmployeeId(employeeId);
-
-    asset.assetId = assetId;
-    asset.assetsType = assetsType;
-    asset.serialNumber = serialNumber;
-    asset.status = status;
-    asset.updatedDateTime = currentDateTime;
-
-    await saveAsset(asset);
-
-    return {
-      statusCode: 200, // Set the status code to 200 for successful operation
-      body: JSON.stringify(asset)
-    };
-  } catch (error) {
-    console.error("Error updating asset details:", error);
-    return {
-      statusCode: 500, // Set the status code to 500 for errors
-      body: JSON.stringify({ error: error.message })
-    };
-  }
-};
-
-const getAssetByEmployeeId = async (employeeId) => {
-  try {
+    const objKeys = Object.keys(body);
     const params = {
       TableName: process.env.ASSETS_TABLE,
-      FilterExpression: "employeeId = :id",
-      ExpressionAttributeValues: {
-        ":id": { S: employeeId },
-      },
-      ProjectionExpression: "employeeId",
-    };
-  
-    const command = new ScanCommand(params);
-    const data = await client.send(command);
-
-    if (data) {
-      return unmarshall(data);
-    }
-    return null; // No asset found for the provided employeeId
-  } catch (error) {
-    console.error("Error fetching asset data:", error);
-    throw error;
-  }
-};
-
-const saveAsset = async (asset) => {
-  try {
-    const params = {
-      TableName: process.env.ASSETS_TABLE,
-      Item: marshall(asset)
+      Key: marshall({ emp: empId }),
+      UpdateExpression: `SET ${objKeys.map((_, index) => `#key${index} = :value${index}`).join(', ')}, updatedDateTime = :updatedDateTime`,
+      ExpressionAttributeNames: objKeys.reduce((acc, key, index) => ({
+        ...acc,
+        [`#key${index}`]: key,
+      }), {}),
+      ExpressionAttributeValues: marshall({
+        ...objKeys.reduce((acc, key, index) => ({
+          ...acc,
+          [`:value${index}`]: body[key],
+        }), {}),
+        ':updatedDateTime': currentDateTime,
+      }),
     };
 
-    const command = new PutItemCommand(params);
-    await client.send(command);
-  } catch (error) {
-    console.error("Error saving asset data:", error);
-    throw error;
+    const updateResult = await client.send(new UpdateItemCommand(params));
+    response.body = JSON.stringify({
+      message: 'Successfully updated asset details.',
+      updateResult,
+    });
+  } catch (e) {
+    console.error(e);
+    response.statusCode = 500;
+    response.body = JSON.stringify({
+      message: 'Failed to update asset details.',
+      errorMsg: e.message,
+      errorStack: e.stack,
+    });
   }
+  return response;
 };
 
 module.exports = {
