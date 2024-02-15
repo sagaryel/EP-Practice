@@ -234,12 +234,17 @@ const getAssetByEmployeeId = async (employeeId) => {
       TableName: process.env.ASSETS_TABLE,
       KeyConditionExpression: 'employeeId = :eid',
       ExpressionAttributeValues: {
-        ':eid': employeeId
+        ':eid': { S: employeeId }
       }
     };
 
-    const result = await dynamodb.query(params).promise();
-    return result.Items && result.Items.length > 0 ? result.Items[0] : null;
+    const command = new QueryCommand(params);
+    const result = await client.send(command);
+    
+    if (result.Items && result.Items.length > 0) {
+      return unmarshall(result.Items[0]);
+    }
+    return null; // No asset found for the provided employeeId
   } catch (error) {
     console.error("Error fetching asset data:", error);
     throw error;
@@ -250,10 +255,11 @@ const saveAsset = async (asset) => {
   try {
     const params = {
       TableName: process.env.ASSETS_TABLE,
-      Item: asset
+      Item: marshall(asset)
     };
 
-    await dynamodb.put(params).promise();
+    const command = new PutItemCommand(params);
+    await client.send(command);
   } catch (error) {
     console.error("Error saving asset data:", error);
     throw error;
