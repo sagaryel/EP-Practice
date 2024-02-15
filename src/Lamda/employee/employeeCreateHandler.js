@@ -216,13 +216,13 @@ const updateAssetDetails = async (event) => {
     await saveAsset(asset);
 
     return {
-      statusCode: 200,
+      statusCode: 200, // Set the status code directly here
       body: JSON.stringify(asset)
     };
   } catch (error) {
     console.error("Error updating asset details:", error);
     return {
-      statusCode: 500,
+      statusCode: 500, // Set the status code directly here
       body: JSON.stringify({ error: error.message })
     };
   }
