@@ -215,9 +215,9 @@ const updateAssetDetails = async (event) => {
     };
   
     const command = new ScanCommand(params);
-    const asset = await client.send(command);
+    const scanResult  = await client.send(command);
 
-    if (!asset) {
+    if (scanResult .Items.length === 0) {
       return {
         statusCode: 404,
         body: JSON.stringify({
@@ -225,7 +225,7 @@ const updateAssetDetails = async (event) => {
         }),
       };
     }
-
+    const asset = scanResult.Items[0];
     // Update the asset with the new values
     const currentDateTime = moment().toISOString();
     const updateParams = {
