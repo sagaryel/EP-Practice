@@ -226,6 +226,7 @@ const updateAssetDetails = async (event) => {
       };
     }
     const asset = scanResult.Items[0];
+    console.log("Asset Object:", asset);
     // Update the asset with the new values
     const currentDateTime = moment().toISOString();
     const updateParams = {
