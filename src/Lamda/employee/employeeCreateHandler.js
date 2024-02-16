@@ -234,12 +234,11 @@ const updateAssetDetails = async (event) => {
     const updateParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: { S: asset.assetId },
+        assetId: assetId
       },
       UpdateExpression:
-        "SET assetId = :assetId, assetsType = :assetsType, serialNumber = :serialNumber, #st = :status, updatedDateTime = :updatedDateTime",
+        "SET assetsType = :assetsType, serialNumber = :serialNumber, #st = :status, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: {
-        ":assetId": { N: assetId },
         ":assetsType": { S: requestBody.assetsType },
         ":serialNumber": { S: requestBody.serialNumber },
         ":status": { S: requestBody.status },
