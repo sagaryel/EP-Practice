@@ -234,7 +234,7 @@ const updateAssetDetails = async (event) => {
     const updateParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: assetId
+        assetId: asset.assetId
       },
       UpdateExpression:
         "SET assetsType = :assetsType, serialNumber = :serialNumber, #st = :status, updatedDateTime = :updatedDateTime",
