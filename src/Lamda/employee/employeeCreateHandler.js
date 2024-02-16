@@ -217,7 +217,7 @@ const updateAssetDetails = async (event) => {
     const command = new ScanCommand(params);
     const scanResult  = await client.send(command);
 
-    if (scanResult .Items.length === 0) {
+    if (scanResult.Items.length === 0) {
       return {
         statusCode: 404,
         body: JSON.stringify({
