@@ -205,14 +205,17 @@ const updateAssetDetails = async (event) => {
     const employeeId = event.pathParameters.employeeId;
 
     // Scan DynamoDB to find the asset details based on the employeeId
-    const scanParams = {
+    const params = {
       TableName: process.env.ASSETS_TABLE,
+      FilterExpression: "employeeId = :eId",
+      ExpressionAttributeValues: {
+        ":eId": { S: employeeId },
+      },
+      ProjectionExpression: "employeeId",
     };
-
-    const scanCommand = new ScanCommand(scanParams);
-    const scanResult = await client.send(scanCommand);
-
-    const asset = scanResult.Items.find(item => item.employeeId === employeeId);
+  
+    const command = new ScanCommand(params);
+    const asset = await client.send(command);
 
     if (!asset) {
       return {
