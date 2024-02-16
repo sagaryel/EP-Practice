@@ -23,7 +23,7 @@ const createEmployee = async (event) => {
   const response = { statusCode: httpStatusCodes.SUCCESS };
   try {
     const requestBody = JSON.parse(event.body);
-    
+
     // Check for required fields
     // const requiredFields = ['employeeId', 'firstName', 'lastName', 'dateOfBirth', 'officeEmailAddress', 'branchOffice'];
     // if (!requiredFields.every(field => requestBody[field])) {
@@ -48,14 +48,13 @@ const createEmployee = async (event) => {
     // Fetch the highest highestSerialNumber from the DynamoDB table
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
-
-
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
-        serialNumber:nextSerialNumber,
+        serialNumber: nextSerialNumber,
         employeeId: requestBody.employeeId,
         firstName: requestBody.firstName,
         lastName: requestBody.lastName,
@@ -87,7 +86,7 @@ const createEmployee = async (event) => {
       }),
     };
     const createResult = await client.send(new PutItemCommand(params));
-      response.body = JSON.stringify({
+    response.body = JSON.stringify({
       message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
       createResult,
     });
@@ -138,7 +137,7 @@ async function getHighestSerialNumber() {
 
   try {
     const result = await client.send(new ScanCommand(params));
-   
+
     // Sort the items in descending order based on assignmentId
     const sortedItems = result.Items.sort((a, b) => {
       return parseInt(b.serialNumber.N) - parseInt(a.serialNumber.N);
@@ -167,10 +166,10 @@ const getAssignmentsByEmployeeId = async (event) => {
   try {
     const params = {
       TableName: process.env.ASSIGNMENTS_TABLE,
-      FilterExpression: 'employeeId = :employeeId',
+      FilterExpression: "employeeId = :employeeId",
       ExpressionAttributeValues: {
-        ':employeeId': { S: employeeId } // Assuming employeeId is a string, adjust accordingly if not
-      }
+        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
+      },
     };
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
@@ -184,8 +183,9 @@ const getAssignmentsByEmployeeId = async (event) => {
     } else {
       console.log("Successfully retrieved assignments for employee.");
       response.body = JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
-        data: Items.map(item => unmarshall(item)) // Unmarshalling each item
+        message:
+          httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
+        data: Items.map((item) => unmarshall(item)), // Unmarshalling each item
       });
     }
   } catch (error) {
@@ -193,58 +193,82 @@ const getAssignmentsByEmployeeId = async (event) => {
     response.statusCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
     response.body = JSON.stringify({
       message: httpStatusMessages.FAILED_TO_RETRIEVE_ASSIGNMENTS,
-      error: error.message
+      error: error.message,
     });
   }
   return response;
 };
 
-
 const updateAssetDetails = async (event) => {
-  const response = { statusCode: 200 };
   try {
-    const body = JSON.parse(event.body);
-    const empId = event.pathParameters.employeeId;
-    
-    const currentDateTime = new Date().toISOString();
+    const requestBody = JSON.parse(event.body);
+    const employeeId = event.pathParameters.employeeId;
+    const assetId = requestBody.assetId;
 
-    const objKeys = Object.keys(body);
-    const params = {
+    // Query DynamoDB to get the asset details based on the employeeId
+    const queryParams = {
       TableName: process.env.ASSETS_TABLE,
-      Key: marshall({ emp: empId }), // Make sure "emp" matches the primary key attribute name
-      UpdateExpression: `SET ${objKeys.map((_, index) => `#key${index} = :value${index}`).join(', ')}, updatedDateTime = :updatedDateTime`,
-      ExpressionAttributeNames: objKeys.reduce((acc, key, index) => ({
-        ...acc,
-        [`#key${index}`]: key,
-      }), {}),
-      ExpressionAttributeValues: marshall({
-        ...objKeys.reduce((acc, key, index) => ({
-          ...acc,
-          [`:value${index}`]: body[key],
-        }), {}),
-        ':updatedDateTime': currentDateTime,
-      }),
+      KeyConditionExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId },
+      },
     };
 
-    const updateResult = await client.send(new UpdateItemCommand(params));
-    response.body = JSON.stringify({
-      message: 'Successfully updated asset details.',
-      updateResult,
-    });
-  } catch (e) {
-    console.error(e);
-    response.statusCode = 500;
-    response.body = JSON.stringify({
-      message: 'Failed to update asset details.',
-      errorMsg: e.message,
-      errorStack: e.stack,
-    });
+    const queryCommand = new QueryCommand(queryParams);
+    const queryResult = await client.send(queryCommand);
+
+    if (queryResult.Items.length === 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: "No assets found for the specified employeeId",
+        }),
+      };
+    }
+
+    // Assuming there's only one asset associated with an employee for simplicity
+    const asset = unmarshall(queryResult.Items[0]);
+
+    // Update the asset with the new values
+    const currentDateTime = moment().toISOString();
+    const updateParams = {
+      TableName: process.env.ASSETS_TABLE,
+      Key: {
+        assetId: { S: asset.assetId },
+      },
+      UpdateExpression:
+        "SET assetId = :assetId, assetsType = :assetsType, serialNumber = :serialNumber, #st = :status, updatedDateTime = :updatedDateTime",
+      ExpressionAttributeValues: {
+        ":assetId": { N: assetId },
+        ":assetsType": { S: requestBody.assetsType },
+        ":serialNumber": { S: requestBody.serialNumber },
+        ":status": { S: requestBody.status },
+        ":updatedDateTime": { S: currentDateTime },
+      },
+      ExpressionAttributeNames: {
+        "#st": "status",
+      },
+      ReturnValues: "ALL_NEW",
+    };
+
+    const updateCommand = new UpdateItemCommand(updateParams);
+    const updatedAsset = await client.send(updateCommand);
+
+    return {
+      statusCode: httpStatusCodes.SUCCESS,
+      body: JSON.stringify(updatedAsset.Attributes),
+    };
+  } catch (error) {
+    console.error("Error updating asset details:", error);
+    return {
+      statusCode: httpStatusCodes.INTERNAL_SERVER_ERROR,
+      body: JSON.stringify({ message: "Failed to update asset details" }),
+    };
   }
-  return response;
 };
 
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
-  updateAssetDetails
+  updateAssetDetails,
 };
