@@ -203,21 +203,18 @@ const updateAssetDetails = async (event) => {
   try {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
-    const assetId = requestBody.assetId;
 
-    // Query DynamoDB to get the asset details based on the employeeId
-    const queryParams = {
+    // Scan DynamoDB to find the asset details based on the employeeId
+    const scanParams = {
       TableName: process.env.ASSETS_TABLE,
-      KeyConditionExpression: "employeeId = :employeeId",
-      ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId },
-      },
     };
 
-    const queryCommand = new QueryCommand(queryParams);
-    const queryResult = await client.send(queryCommand);
+    const scanCommand = new ScanCommand(scanParams);
+    const scanResult = await client.send(scanCommand);
 
-    if (queryResult.Items.length === 0) {
+    const asset = scanResult.Items.find(item => item.employeeId === employeeId);
+
+    if (!asset) {
       return {
         statusCode: 404,
         body: JSON.stringify({
@@ -225,9 +222,6 @@ const updateAssetDetails = async (event) => {
         }),
       };
     }
-
-    // Assuming there's only one asset associated with an employee for simplicity
-    const asset = unmarshall(queryResult.Items[0]);
 
     // Update the asset with the new values
     const currentDateTime = moment().toISOString();
@@ -239,10 +233,10 @@ const updateAssetDetails = async (event) => {
       UpdateExpression:
         "SET assetsType = :assetsType, serialNumber = :serialNumber, #st = :status, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: {
-        ":assetsType": { S: requestBody.assetsType },
-        ":serialNumber": { S: requestBody.serialNumber },
-        ":status": { S: requestBody.status },
-        ":updatedDateTime": { S: currentDateTime },
+        ":assetsType": requestBody.assetsType,
+        ":serialNumber": requestBody.serialNumber,
+        ":status": requestBody.status,
+        ":updatedDateTime": currentDateTime,
       },
       ExpressionAttributeNames: {
         "#st": "status",
