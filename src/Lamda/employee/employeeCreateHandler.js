@@ -219,12 +219,13 @@ const updateAssetDetails = async (event) => {
 
     // If asset not found
     if (!assetResult.Item) {
-      return {
+      response = {
         statusCode: 404,
         body: JSON.stringify({
           message: "Asset not found for the specified assetId",
         }),
       };
+      return response;
     }
 
     const currentDateTime = moment().toISOString();
@@ -253,7 +254,6 @@ const updateAssetDetails = async (event) => {
     const updatedAsset = await client.send(updateCommand);
 
     console.log("Successfully updated asset.");
-
     response.body = JSON.stringify({
       ...unmarshall(updatedAsset.Attributes),
       message: httpStatusMessages.SUCCESSFULLY_UPDATE_ASSSET_DETAILS,
@@ -265,7 +265,7 @@ const updateAssetDetails = async (event) => {
     response.body = JSON.stringify({
       message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
       errorMsg: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     });
   }
   return response;
