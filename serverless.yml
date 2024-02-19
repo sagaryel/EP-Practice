@@ -71,7 +71,7 @@ functions:
     timeout: 120
     events:
       - http:
-          path: asset/{employeeId}
+          path: asset/{assetId}
           method: PUT
 resources:
   Resources:

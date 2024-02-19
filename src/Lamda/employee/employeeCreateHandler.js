@@ -202,46 +202,45 @@ const getAssignmentsByEmployeeId = async (event) => {
 const updateAssetDetails = async (event) => {
   try {
     const requestBody = JSON.parse(event.body);
-    const employeeId = event.pathParameters.employeeId;
+    const assetId = event.pathParameters.assetId;
 
-    // Scan DynamoDB to find the asset details based on the employeeId
-    const params = {
+    // Get asset details from DynamoDB based on assetId
+    const getParams = {
       TableName: process.env.ASSETS_TABLE,
-      FilterExpression: "employeeId = :eId",
-      ExpressionAttributeValues: {
-        ":eId": { S: employeeId },
-      },
-      ProjectionExpression: "employeeId",
+      Key: {
+        assetId: { S: assetId }
+      }
     };
-  
-    const command = new ScanCommand(params);
-    const scanResult  = await client.send(command);
 
-    if (scanResult.Items.length === 0) {
+    const getCommand = new GetItemCommand(getParams);
+    const assetResult = await client.send(getCommand);
+
+    // If asset not found
+    if (!assetResult.Item) {
       return {
         statusCode: 404,
         body: JSON.stringify({
-          message: "No assets found for the specified employeeId",
+          message: "Asset not found for the specified assetId",
         }),
       };
     }
-    const asset = scanResult.Items[0];
-    console.log("Asset Object:", asset);
-    // Update the asset with the new values
+
     const currentDateTime = moment().toISOString();
+    
+    // Update the asset with the new values
     const updateParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: asset.assetId
+        assetId: { S: assetId }
       },
-      UpdateExpression:
-        "SET assetsType = :assetsType, serialNumber = :serialNumber, #st = :status, updatedDateTime = :updatedDateTime",
-      ExpressionAttributeValues: {
+      UpdateExpression: "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
+      ExpressionAttributeValues: marshall({
         ":assetsType": requestBody.assetsType,
         ":serialNumber": requestBody.serialNumber,
         ":status": requestBody.status,
+        ":assignTo": requestBody.assignTo || null,
         ":updatedDateTime": currentDateTime,
-      },
+      }),
       ExpressionAttributeNames: {
         "#st": "status",
       },
@@ -252,13 +251,13 @@ const updateAssetDetails = async (event) => {
     const updatedAsset = await client.send(updateCommand);
 
     return {
-      statusCode: httpStatusCodes.SUCCESS,
-      body: JSON.stringify(updatedAsset.Attributes),
+      statusCode: 200,
+      body: JSON.stringify(unmarshall(updatedAsset.Attributes)),
     };
   } catch (error) {
     console.error("Error updating asset details:", error);
     return {
-      statusCode: httpStatusCodes.INTERNAL_SERVER_ERROR,
+      statusCode: 500,
       body: JSON.stringify({ message: "Failed to update asset details" }),
     };
   }
