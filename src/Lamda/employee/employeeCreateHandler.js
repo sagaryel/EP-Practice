@@ -255,20 +255,20 @@ const updateAssetDetails = async (event) => {
 
     console.log("Successfully updated asset.");
     response.body = JSON.stringify({
-      ...unmarshall(updatedAsset.Attributes),
       message: httpStatusMessages.SUCCESSFULLY_UPDATE_ASSSET_DETAILS,
+      updatedAsset
     });
 
   } catch (e) {
     console.error("Error updating asset details:", e);
-    let response = {statusCode : httpStatusCodes.BAD_REQUEST};
+    response.statusCode = httpStatusCodes.BAD_REQUEST;
     response.body = JSON.stringify({
       message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
       errorMsg: e.message,
       errorStack: e.stack
     });
-    return response;
   }
+  return response;
 };
 
 module.exports = {
