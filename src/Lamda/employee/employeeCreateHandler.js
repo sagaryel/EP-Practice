@@ -230,7 +230,7 @@ const updateAssetDetails = async (event) => {
 
     const assignedTOExist = await isAssignedToExists(requestBody.assignTo);
     if (assignedTOExist) {
-      throw new Error(`The specified 'assignTo' (${requestBody.assignTo}) is already assigned with an asset ID`);
+      throw new Error(`The specified 'assignTo' ${requestBody.assignTo} is already assigned with an asset ID  ${assignedAssetId}`);
     }
 
     // Update the asset with the new values
