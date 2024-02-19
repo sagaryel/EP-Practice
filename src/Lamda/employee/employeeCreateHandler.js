@@ -208,7 +208,7 @@ const updateAssetDetails = async (event) => {
     const getParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: { S: assetId }
+        assetId: { N: assetId }
       }
     };
 
@@ -231,7 +231,7 @@ const updateAssetDetails = async (event) => {
     const updateParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: { S: assetId }
+        assetId: { N: assetId }
       },
       UpdateExpression: "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
