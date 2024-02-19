@@ -255,7 +255,10 @@ const updateAssetDetails = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(unmarshall(updatedAsset.Attributes)),
+      body: JSON.stringify({
+        message: "Successfully updated asset",
+        updatedAsset: unmarshall(updatedAsset.Attributes)
+      }),
     };
   } catch (error) {
     console.error("Error updating asset details:", error);
