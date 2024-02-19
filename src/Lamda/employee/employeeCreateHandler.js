@@ -261,14 +261,14 @@ const updateAssetDetails = async (event) => {
 
   } catch (e) {
     console.error("Error updating asset details:", e);
-    response.statusCode = httpStatusCodes.BAD_REQUEST;
+    let response = {statusCode : httpStatusCodes.BAD_REQUEST};
     response.body = JSON.stringify({
       message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
       errorMsg: e.message,
       errorStack: e.stack
     });
+    return response;
   }
-  return response;
 };
 
 module.exports = {
