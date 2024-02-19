@@ -200,11 +200,10 @@ const getAssignmentsByEmployeeId = async (event) => {
 };
 
 const updateAssetDetails = async (event) => {
-  console.log("inside the asset update details");
+  console.log("inside the asset update  details");
   try {
     const requestBody = JSON.parse(event.body);
     const assetId = event.pathParameters.assetId;
-    const response = { statusCode: httpStatusCodes.SUCCESS };
 
     // Get asset details from DynamoDB based on assetId
     const getParams = {
@@ -219,17 +218,16 @@ const updateAssetDetails = async (event) => {
 
     // If asset not found
     if (!assetResult.Item) {
-      response = {
+      return {
         statusCode: 404,
         body: JSON.stringify({
           message: "Asset not found for the specified assetId",
         }),
       };
-      return response;
     }
 
     const currentDateTime = moment().toISOString();
-
+    
     // Update the asset with the new values
     const updateParams = {
       TableName: process.env.ASSETS_TABLE,
@@ -254,21 +252,18 @@ const updateAssetDetails = async (event) => {
     const updatedAsset = await client.send(updateCommand);
 
     console.log("Successfully updated asset.");
-    response.body = JSON.stringify({
-      message: httpStatusMessages.SUCCESSFULLY_UPDATE_ASSSET_DETAILS,
-      updatedAsset
-    });
 
-  } catch (e) {
-    console.error("Error updating asset details:", e);
-    response.statusCode = httpStatusCodes.BAD_REQUEST;
-    response.body = JSON.stringify({
-      message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
-      errorMsg: e.message,
-      errorStack: e.stack
-    });
+    return {
+      statusCode: 200,
+      body: JSON.stringify(unmarshall(updatedAsset.Attributes)),
+    };
+  } catch (error) {
+    console.error("Error updating asset details:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Failed to update asset details" }),
+    };
   }
-  return response;
 };
 
 module.exports = {
