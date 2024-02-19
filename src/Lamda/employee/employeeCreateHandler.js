@@ -250,21 +250,24 @@ const updateAssetDetails = async (event) => {
 
     const updateCommand = new UpdateItemCommand(updateParams);
     const updatedAsset = await client.send(updateCommand);
-
     console.log("Successfully updated asset.");
 
     return {
-      statusCode: 200,
+      statusCode: httpStatusCodes.SUCCESS,
       body: JSON.stringify({
-        message: "Successfully updated asset",
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSSET_DETAILS,
         updatedAsset: unmarshall(updatedAsset.Attributes)
       }),
     };
   } catch (error) {
     console.error("Error updating asset details:", error);
     return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Failed to update asset details" }),
+      statusCode: httpStatusCodes.BAD_REQUEST,
+      body: JSON.stringify({ 
+        message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
+        errorMsg: e.message,
+        errorStack: e.stack, 
+      }),
     };
   }
 };
