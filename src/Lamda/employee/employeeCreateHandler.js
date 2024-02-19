@@ -209,8 +209,8 @@ const updateAssetDetails = async (event) => {
     const getParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: { N: assetId }
-      }
+        assetId: { N: assetId },
+      },
     };
 
     const getCommand = new GetItemCommand(getParams);
@@ -228,33 +228,19 @@ const updateAssetDetails = async (event) => {
 
     const currentDateTime = moment().toISOString();
 
-    const scanParams = {
-      TableName: process.env.ASSETS_TABLE,
-      FilterExpression: "assignTo = :assignToValue",
-      ExpressionAttributeValues: {
-        ":assignToValue": requestBody.assignTo
-      }
-    };
-
-    const scanCommand = new ScanCommand(scanParams);
-    const scanResult = await client.send(scanCommand);
-
-    if (scanResult.Items.length > 0) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: `The specified 'assignTo' (${requestBody.assignTo}) is already assigned with an asset ID`
-        }),
-      };
+    const assignedTOExist = await isAssignedToExists(requestBody.assignTo);
+    if (assignedTOExist) {
+      throw new Error("The specified 'assignTo' (${requestBody.assignTo}) is already assigned with an asset ID");
     }
-    
+
     // Update the asset with the new values
     const updateParams = {
       TableName: process.env.ASSETS_TABLE,
       Key: {
-        assetId: { N: assetId }
+        assetId: { N: assetId },
       },
-      UpdateExpression: "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
+      UpdateExpression:
+        "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
         ":assetsType": requestBody.assetsType,
         ":serialNumber": requestBody.serialNumber,
@@ -276,20 +262,36 @@ const updateAssetDetails = async (event) => {
       statusCode: httpStatusCodes.SUCCESS,
       body: JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSSET_DETAILS,
-        updatedAsset: unmarshall(updatedAsset.Attributes)
+        updatedAsset: unmarshall(updatedAsset.Attributes),
       }),
     };
   } catch (error) {
     console.error("Error updating asset details:", error);
     return {
       statusCode: httpStatusCodes.BAD_REQUEST,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
         errorMsg: error.message,
-        errorStack: error.stack, 
+        errorStack: error.stack,
       }),
     };
   }
+};
+
+// Check if the email address already exists
+const isAssignedToExists = async (employeeId) => {
+  const params = {
+    TableName: process.env.ASSETS_TABLE,
+    FilterExpression: "assignTo = :assign",
+    ExpressionAttributeValues: {
+      ":assign": { S: employeeId },
+    },
+    ProjectionExpression: "assignTo",
+  };
+
+  const command = new ScanCommand(params);
+  const data = await client.send(command);
+  return data.Items.length > 0;
 };
 
 module.exports = {
