@@ -285,8 +285,8 @@ const updateAssetDetails = async (event) => {
       statusCode: httpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({ 
         message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
-        errorMsg: e.message,
-        errorStack: e.stack, 
+        errorMsg: error.message,
+        errorStack: error.stack, 
       }),
     };
   }
