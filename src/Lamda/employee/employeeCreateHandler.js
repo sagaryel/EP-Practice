@@ -227,6 +227,26 @@ const updateAssetDetails = async (event) => {
     }
 
     const currentDateTime = moment().toISOString();
+
+    const scanParams = {
+      TableName: process.env.ASSETS_TABLE,
+      FilterExpression: "assignTo = :assignToValue",
+      ExpressionAttributeValues: {
+        ":assignToValue": requestBody.assignTo
+      }
+    };
+
+    const scanCommand = new ScanCommand(scanParams);
+    const scanResult = await client.send(scanCommand);
+
+    if (scanResult.Items.length > 0) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: `The specified 'assignTo' (${requestBody.assignTo}) is already assigned with an asset ID`
+        }),
+      };
+    }
     
     // Update the asset with the new values
     const updateParams = {
