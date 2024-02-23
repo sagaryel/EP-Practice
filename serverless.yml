@@ -86,7 +86,7 @@ functions:
           path: bank
           method: POST
   bankGet:
-    handler: src/Lamda/employee/employeeCreateHandler.updateAssetDetails
+    handler: src/Lamda/employee/employeeCreateHandler.getBankDetailsByEmployeeId
     name: bankGet
     memorySize: 128
     timeout: 120
