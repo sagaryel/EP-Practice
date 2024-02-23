@@ -294,8 +294,57 @@ const isAssignedToExists = async (employeeId) => {
   return data.Items.length > 0;
 };
 
+const { QueryCommand } = require("@aws-sdk/client-dynamodb");
+
+const getBankDetailsByEmployeeId = async (event) => {
+  console.log("Inside the get bank details by employee ID function");
+  try {
+    const employeeId = event.pathParameters.employeeId;
+
+    // Query bank details from DynamoDB based on employeeId
+    const queryParams = {
+      TableName: process.env.BANK_DETAILS_TABLE,
+      KeyConditionExpression: "#employeeId = :employeeId",
+      ExpressionAttributeNames: {
+        "#employeeId": "employeeId"
+      },
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId } // Assuming employeeId is a string
+      }
+    };
+
+    const queryCommand = new QueryCommand(queryParams);
+    const queryResult = await client.send(queryCommand);
+
+    // If bank details not found
+    if (!queryResult.Items || queryResult.Items.length === 0) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: "Bank details not found for the specified employeeId",
+        }),
+      };
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(queryResult.Items.map(item => unmarshall(item))),
+    };
+  } catch (error) {
+    console.error("Error fetching bank details:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Failed to fetch bank details",
+        error: error.message,
+      }),
+    };
+  }
+};
+
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
   updateAssetDetails,
+  getBankDetailsByEmployeeId
 };

@@ -85,6 +85,15 @@ functions:
       - http:
           path: bank
           method: POST
+  bankGet:
+    handler: src/Lamda/employee/employeeCreateHandler.updateAssetDetails
+    name: bankGet
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: bank
+          method: GET
 resources:
   Resources:
     EmployeeTable:
