@@ -294,8 +294,6 @@ const isAssignedToExists = async (employeeId) => {
   return data.Items.length > 0;
 };
 
-const { QueryCommand } = require("@aws-sdk/client-dynamodb");
-
 const getBankDetailsByEmployeeId = async (event) => {
   console.log("Inside the get bank details by employee ID function");
   try {
