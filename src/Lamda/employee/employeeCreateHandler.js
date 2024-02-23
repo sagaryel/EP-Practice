@@ -301,7 +301,7 @@ const getBankDetailsByEmployeeId = async (event) => {
 
     // Query bank details from DynamoDB based on employeeId
     const queryParams = {
-      TableName: process.env.BANK_DETAILS_TABLE,
+      TableName: process.env.BANK_TABLE,
       KeyConditionExpression: "#employeeId = :employeeId",
       ExpressionAttributeNames: {
         "#employeeId": "employeeId"
