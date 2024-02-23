@@ -313,7 +313,8 @@ const getBankDetailsByEmployeeId = async (event) => {
       }
     };
 
-    const queryResult = await docClient.query(queryParams).promise();
+    const queryCommand = new QueryCommand(queryParams);
+    const queryResult = await client.send(queryCommand);
 
     // If bank details not found
     if (!queryResult.Items || queryResult.Items.length === 0) {
