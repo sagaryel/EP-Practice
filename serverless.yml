@@ -92,7 +92,7 @@ functions:
     timeout: 120
     events:
       - http:
-          path: bank
+          path: bank/{employeeId}
           method: GET
 resources:
   Resources:
