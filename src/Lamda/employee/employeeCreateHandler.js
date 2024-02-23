@@ -199,100 +199,100 @@ const getAssignmentsByEmployeeId = async (event) => {
   return response;
 };
 
-const updateAssetDetails = async (event) => {
-  console.log("inside the asset update  details");
-  try {
-    const requestBody = JSON.parse(event.body);
-    const assetId = event.pathParameters.assetId;
+// const updateAssetDetails = async (event) => {
+//   console.log("inside the asset update  details");
+//   try {
+//     const requestBody = JSON.parse(event.body);
+//     const assetId = event.pathParameters.assetId;
 
-    // Get asset details from DynamoDB based on assetId
-    const getParams = {
-      TableName: process.env.ASSETS_TABLE,
-      Key: {
-        assetId: { N: assetId },
-      },
-    };
+//     // Get asset details from DynamoDB based on assetId
+//     const getParams = {
+//       TableName: process.env.ASSETS_TABLE,
+//       Key: {
+//         assetId: { N: assetId },
+//       },
+//     };
 
-    const getCommand = new GetItemCommand(getParams);
-    const assetResult = await client.send(getCommand);
+//     const getCommand = new GetItemCommand(getParams);
+//     const assetResult = await client.send(getCommand);
 
-    // If asset not found
-    if (!assetResult.Item) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          message: "Asset not found for the specified assetId",
-        }),
-      };
-    }
+//     // If asset not found
+//     if (!assetResult.Item) {
+//       return {
+//         statusCode: 404,
+//         body: JSON.stringify({
+//           message: "Asset not found for the specified assetId",
+//         }),
+//       };
+//     }
 
-    const currentDateTime = moment().toISOString();
+//     const currentDateTime = moment().toISOString();
 
-    const assignedTOExist = await isAssignedToExists(requestBody.assignTo);
-    if (assignedTOExist) {
-      throw new Error(`The specified 'assignTo' ${requestBody.assignTo} is already assigned with an asset ID `);
-    }
+//     const assignedTOExist = await isAssignedToExists(requestBody.assignTo);
+//     if (assignedTOExist) {
+//       throw new Error(`The specified 'assignTo' ${requestBody.assignTo} is already assigned with an asset ID `);
+//     }
 
-    // Update the asset with the new values
-    const updateParams = {
-      TableName: process.env.ASSETS_TABLE,
-      Key: {
-        assetId: { N: assetId },
-      },
-      UpdateExpression:
-        "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
-      ExpressionAttributeValues: marshall({
-        ":assetsType": requestBody.assetsType,
-        ":serialNumber": requestBody.serialNumber,
-        ":status": requestBody.status,
-        ":assignTo": requestBody.assignTo || null,
-        ":updatedDateTime": currentDateTime,
-      }),
-      ExpressionAttributeNames: {
-        "#st": "status",
-      },
-      ReturnValues: "ALL_NEW",
-    };
+//     // Update the asset with the new values
+//     const updateParams = {
+//       TableName: process.env.ASSETS_TABLE,
+//       Key: {
+//         assetId: { N: assetId },
+//       },
+//       UpdateExpression:
+//         "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
+//       ExpressionAttributeValues: marshall({
+//         ":assetsType": requestBody.assetsType,
+//         ":serialNumber": requestBody.serialNumber,
+//         ":status": requestBody.status,
+//         ":assignTo": requestBody.assignTo || null,
+//         ":updatedDateTime": currentDateTime,
+//       }),
+//       ExpressionAttributeNames: {
+//         "#st": "status",
+//       },
+//       ReturnValues: "ALL_NEW",
+//     };
 
-    const updateCommand = new UpdateItemCommand(updateParams);
-    const updatedAsset = await client.send(updateCommand);
-    console.log("Successfully updated asset.");
+//     const updateCommand = new UpdateItemCommand(updateParams);
+//     const updatedAsset = await client.send(updateCommand);
+//     console.log("Successfully updated asset.");
 
-    return {
-      statusCode: httpStatusCodes.SUCCESS,
-      body: JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSSET_DETAILS,
-        updatedAsset: unmarshall(updatedAsset.Attributes),
-      }),
-    };
-  } catch (error) {
-    console.error("Error updating asset details:", error);
-    return {
-      statusCode: httpStatusCodes.BAD_REQUEST,
-      body: JSON.stringify({
-        message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
-        errorMsg: error.message,
-        errorStack: error.stack,
-      }),
-    };
-  }
-};
+//     return {
+//       statusCode: httpStatusCodes.SUCCESS,
+//       body: JSON.stringify({
+//         message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSSET_DETAILS,
+//         updatedAsset: unmarshall(updatedAsset.Attributes),
+//       }),
+//     };
+//   } catch (error) {
+//     console.error("Error updating asset details:", error);
+//     return {
+//       statusCode: httpStatusCodes.BAD_REQUEST,
+//       body: JSON.stringify({
+//         message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
+//         errorMsg: error.message,
+//         errorStack: error.stack,
+//       }),
+//     };
+//   }
+// };
 
-// Check if the email address already exists
-const isAssignedToExists = async (employeeId) => {
-  const params = {
-    TableName: process.env.ASSETS_TABLE,
-    FilterExpression: "assignTo = :assign",
-    ExpressionAttributeValues: {
-      ":assign": { S: employeeId },
-    },
-    ProjectionExpression: "assignTo",
-  };
+// // Check if the email address already exists
+// const isAssignedToExists = async (employeeId) => {
+//   const params = {
+//     TableName: process.env.ASSETS_TABLE,
+//     FilterExpression: "assignTo = :assign",
+//     ExpressionAttributeValues: {
+//       ":assign": { S: employeeId },
+//     },
+//     ProjectionExpression: "assignTo",
+//   };
 
-  const command = new ScanCommand(params);
-  const data = await client.send(command);
-  return data.Items.length > 0;
-};
+//   const command = new ScanCommand(params);
+//   const data = await client.send(command);
+//   return data.Items.length > 0;
+// };
 
 const getBankDetailsByEmployeeId = async (event) => {
   console.log("Inside the get bank details by employee ID function");
