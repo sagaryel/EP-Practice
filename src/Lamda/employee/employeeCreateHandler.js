@@ -317,10 +317,9 @@ const getBankDetailsByEmployeeId = async (event) => {
         message: httpStatusMessages.ASSIGNMENTS_NOT_FOUND_FOR_EMPLOYEE,
       });
     } else {
-      console.log("Successfully retrieved assignments for employee.");
+      console.log("Successfully retrived bank details for employee.");
       response.body = JSON.stringify({
-        message:
-          httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
+        message:httpStatusMessages.SUCCESSFULLY_RETRIEVED_BANK_DETAILS_FOR_EMPLOYEE,
         data: Items.map((item) => unmarshall(item)), // Unmarshalling each item
       });
     }
@@ -328,7 +327,7 @@ const getBankDetailsByEmployeeId = async (event) => {
     console.error(error);
     response.statusCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
     response.body = JSON.stringify({
-      message: httpStatusMessages.FAILED_TO_RETRIEVE_ASSIGNMENTS,
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_BANK_DETAILS_FOR_EMPLOYEE,
       error: error.message,
     });
   }
