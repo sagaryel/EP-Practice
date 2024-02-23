@@ -296,48 +296,43 @@ const isAssignedToExists = async (employeeId) => {
 
 const getBankDetailsByEmployeeId = async (event) => {
   console.log("Inside the get bank details by employee ID function");
+  const employeeId = event.pathParameters.employeeId;
+
+  const response = { statusCode: httpStatusCodes.SUCCESS };
   try {
-    const employeeId = event.pathParameters.employeeId;
-
-    // Scan bank details from DynamoDB based on employeeId
-    const scanParams = {
+    const params = {
       TableName: process.env.BANK_TABLE,
-      FilterExpression: "#employeeId = :employeeId",
-      ExpressionAttributeNames: {
-        "#employeeId": "employeeId"
-      },
+      FilterExpression: "employeeId = :employeeId",
       ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId } // Assuming employeeId is a string
-      }
+        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
+      },
     };
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
 
-    const scanCommand = new ScanCommand(scanParams);
-    const scanResult = await client.send(scanCommand);
-
-    // If bank details not found
-    if (!scanResult.Items || scanResult.Items.length === 0) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          message: "Bank details not found for the specified employeeId",
-        }),
-      };
+    if (!Items || Items.length === 0) {
+      console.log("Bank Details for employee not found.");
+      response.statusCode = httpStatusCodes.NOT_FOUND;
+      response.body = JSON.stringify({
+        message: httpStatusMessages.ASSIGNMENTS_NOT_FOUND_FOR_EMPLOYEE,
+      });
+    } else {
+      console.log("Successfully retrieved assignments for employee.");
+      response.body = JSON.stringify({
+        message:
+          httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSIGNMENTS_FOR_EMPLOYEE,
+        data: Items.map((item) => unmarshall(item)), // Unmarshalling each item
+      });
     }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(scanResult.Items.map(item => DynamoDB.Converter.unmarshall(item))),
-    };
   } catch (error) {
-    console.error("Error fetching bank details:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Failed to fetch bank details",
-        error: error.message,
-      }),
-    };
+    console.error(error);
+    response.statusCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
+    response.body = JSON.stringify({
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_ASSIGNMENTS,
+      error: error.message,
+    });
   }
+  return response;
 };
 
 module.exports = {
