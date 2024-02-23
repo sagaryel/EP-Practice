@@ -299,25 +299,23 @@ const getBankDetailsByEmployeeId = async (event) => {
   try {
     const employeeId = event.pathParameters.employeeId;
 
-    // Query bank details from DynamoDB based on employeeId
-    const queryParams = {
+    // Scan bank details from DynamoDB based on employeeId
+    const scanParams = {
       TableName: process.env.BANK_TABLE,
-      KeyConditionExpression: "#bankId = :bankId and #employeeId = :employeeId",
+      FilterExpression: "#employeeId = :employeeId",
       ExpressionAttributeNames: {
-        "#bankId": "bankId",
         "#employeeId": "employeeId"
       },
       ExpressionAttributeValues: {
-        ":bankId": { S: "yourBankIdHere" }, // Assuming you need to provide a bankId value
-        ":employeeId": { S: employeeId }
+        ":employeeId": { S: employeeId } // Assuming employeeId is a string
       }
     };
 
-    const queryCommand = new QueryCommand(queryParams);
-    const queryResult = await client.send(queryCommand);
+    const scanCommand = new ScanCommand(scanParams);
+    const scanResult = await client.send(scanCommand);
 
     // If bank details not found
-    if (!queryResult.Items || queryResult.Items.length === 0) {
+    if (!scanResult.Items || scanResult.Items.length === 0) {
       return {
         statusCode: 404,
         body: JSON.stringify({
@@ -328,7 +326,7 @@ const getBankDetailsByEmployeeId = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(queryResult.Items.map(item => DynamoDB.Converter.unmarshall(item))),
+      body: JSON.stringify(scanResult.Items.map(item => DynamoDB.Converter.unmarshall(item))),
     };
   } catch (error) {
     console.error("Error fetching bank details:", error);
