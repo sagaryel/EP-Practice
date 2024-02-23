@@ -311,10 +311,10 @@ const getBankDetailsByEmployeeId = async (event) => {
     const { Items } = await client.send(command);
 
     if (!Items || Items.length === 0) {
-      console.log("Bank Details for employee not found.");
+      console.log("bank details not found for employee");
       response.statusCode = httpStatusCodes.NOT_FOUND;
       response.body = JSON.stringify({
-        message: httpStatusMessages.ASSIGNMENTS_NOT_FOUND_FOR_EMPLOYEE,
+        message: httpStatusMessages.BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE,
       });
     } else {
       console.log("Successfully retrived bank details for employee.");
