@@ -301,18 +301,19 @@ const getBankDetailsByEmployeeId = async (event) => {
 
     // Query bank details from DynamoDB based on employeeId
     const queryParams = {
-      TableName: process.env.BANK_TABLE,
-      KeyConditionExpression: "#employeeId = :employeeId",
+      TableName: process.env.BANK_DETAILS_TABLE,
+      KeyConditionExpression: "#bankId = :bankId and #employeeId = :employeeId",
       ExpressionAttributeNames: {
+        "#bankId": "bankId",
         "#employeeId": "employeeId"
       },
       ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId } // Assuming employeeId is a string
+        ":bankId": { S: "yourBankIdHere" }, // Assuming you need to provide a bankId value
+        ":employeeId": { S: employeeId }
       }
     };
 
-    const queryCommand = new QueryCommand(queryParams);
-    const queryResult = await client.send(queryCommand);
+    const queryResult = await docClient.query(queryParams).promise();
 
     // If bank details not found
     if (!queryResult.Items || queryResult.Items.length === 0) {
@@ -326,7 +327,7 @@ const getBankDetailsByEmployeeId = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(queryResult.Items.map(item => unmarshall(item))),
+      body: JSON.stringify(queryResult.Items.map(item => DynamoDB.Converter.unmarshall(item))),
     };
   } catch (error) {
     console.error("Error fetching bank details:", error);
