@@ -13,8 +13,9 @@ const httpStatusMessages = {
     SUCCESSFULLY_UPDATED_ASSSET_DETAILS : 'Successfully updated assset details.',
     SUCCESSFULLY_RETRIEVED_BANK_DETAILS_FOR_EMPLOYEE : 'Successfully retrived bank details for employee',
     FAILED_TO_RETRIEVE_BANK_DETAILS_FOR_EMPLOYEE : 'Failed to retrived bank details for employee',
-    BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE : ' bank details not found for employee'
-    
+    BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE : ' bank details not found for employee',
+    FAILED_TO_UPDATE_BANK_DETAILS : 'failed to update bank details',
+    SUCCESSFULLY_UPDATED_BANK_DETAILS : 'successfully updated bank details'
     
 }
 
