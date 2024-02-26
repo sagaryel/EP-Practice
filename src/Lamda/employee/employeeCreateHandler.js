@@ -398,7 +398,7 @@ const updateBankDetails = async (event) => {
     return {
       statusCode: httpStatusCodes.SUCCESS,
       body: JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSET_DETAILS, // Corrected typo
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS, // Corrected typo
         updatedAsset: unmarshall(updatedAsset.Attributes),
       }),
     };
@@ -407,7 +407,7 @@ const updateBankDetails = async (event) => {
     return {
       statusCode: httpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
-        message: httpStatusMessages.FAILED_TO_UPDATE_ASSET_DETAILS, // Corrected typo
+        message: httpStatusMessages.FAILED_TO_UPDATE_BANK_DETAILS, // Corrected typo
         errorMsg: error.message,
         errorStack: error.stack,
       }),
