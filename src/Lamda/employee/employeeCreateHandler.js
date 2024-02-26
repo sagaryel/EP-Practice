@@ -377,7 +377,7 @@ const updateBankDetails = async (event) => {
         bankId: { N: bankId },
       },
       UpdateExpression:
-        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType, routingNumber = :routingNumber, updatedDateTime = :updatedDateTime",
+        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType,  updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
         ":bankName": requestBody.bankName,
         ":bankAddress": requestBody.bankAddress,
@@ -386,7 +386,6 @@ const updateBankDetails = async (event) => {
         ":accountNumber": parseInt(requestBody.accountNumber), // assuming accountNumber is numeric
         ":accountType": requestBody.accountType,
         ":updatedDateTime": createdDate,
-        ":routingNumber": requestBody.routingNumber || null
       }),
       ReturnValues: "ALL_NEW",
     };
