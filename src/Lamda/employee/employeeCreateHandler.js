@@ -344,59 +344,62 @@ const updateBankDetails = async (event) => {
   console.log("Inside the bank details update function");
   try {
     const requestBody = JSON.parse(event.body);
-    const bankId = event.pathParameters.bankId; // Assuming bankId is present in the path parameters
+    const bankId = event.pathParameters.bankId;
 
-    // Get bank details from DynamoDB based on bankId
-    const params = {
+    // Get asset details from DynamoDB based on assetId
+    const getParams = {
       TableName: process.env.BANK_TABLE,
       Key: {
-        bankId: { N: bankId }, // Assuming bankId is numeric
+        bankId: { N: bankId },
       },
     };
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
 
-    // If bank details not found
-    if (!Item) {
-      console.log("Bank details not found for bank ID:", bankId);
+    const getCommand = new GetItemCommand(getParams);
+    const assetResult = await client.send(getCommand);
+
+    // If asset not found
+    if (!assetResult.Item) {
       return {
-        statusCode: httpStatusCodes.NOT_FOUND,
+        statusCode: 404,
         body: JSON.stringify({
-          message: httpStatusMessages.BANK_DETAILS_NOT_FOUND_FOR_BANK_ID,
+          message: "Bank details not found for bank ID",
         }),
       };
     }
 
-    // Update the bank details with the new values
+    // Update the asset with the new values
     const updateParams = {
       TableName: process.env.BANK_TABLE,
       Key: {
         bankId: { N: bankId },
       },
       UpdateExpression:
-        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType, routingNumber =:routingNumber, updatedDateTime = :updatedDateTime",
+        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, #at = :accountType, routingNumber = :routingNumber, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
-        ":bankName": requestBody.bankName || Item.bankName.S, // Keep the existing value if not provided in the request
-        ":bankAddress": requestBody.bankAddress || Item.bankAddress.S,
-        ":ifscCode": requestBody.ifscCode || Item.ifscCode.S,
-        ":accountHolderName": requestBody.accountHolderName || Item.accountHolderName.S,
-        ":accountNumber": parseInt(requestBody.accountNumber) || parseInt(Item.accountNumber.N), // Use existing value if not provided in the request
-        ":accountType": requestBody.accountType || Item.accountType.S,
+        ":bankName": requestBody.bankName || assetResult.Item.bankName.S,
+        ":bankAddress": requestBody.bankAddress || assetResult.Item.bankAddress.S,
+        ":ifscCode": requestBody.ifscCode || assetResult.Item.ifscCode.S,
+        ":accountHolderName": requestBody.accountHolderName || assetResult.Item.accountHolderName.S,
+        ":accountNumber": parseInt(requestBody.accountNumber) || parseInt(assetResult.Item.accountNumber.N),
+        ":accountType": requestBody.accountType || assetResult.Item.accountType.S,
         ":updatedDateTime": createdDate,
-        ":routingNumber": routingNumber,
+        ":routingNumber": requestBody.routingNumber, // Assuming routingNumber is present in the requestBody
       }),
+      ExpressionAttributeNames: {
+        "#at": "accountType",
+      },
       ReturnValues: "ALL_NEW",
     };
 
     const updateCommand = new UpdateItemCommand(updateParams);
-    const updatedBank = await client.send(updateCommand);
-    console.log("Successfully updated bank details.");
+    const updatedAsset = await client.send(updateCommand);
+    console.log("Successfully updated Bank details.");
 
     return {
       statusCode: httpStatusCodes.SUCCESS,
       body: JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS,
-        updatedBank: unmarshall(updatedBank.Attributes),
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSET_DETAILS, // Corrected typo
+        updatedAsset: unmarshall(updatedAsset.Attributes),
       }),
     };
   } catch (error) {
@@ -404,7 +407,7 @@ const updateBankDetails = async (event) => {
     return {
       statusCode: httpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
-        message: httpStatusMessages.FAILED_TO_UPDATE_BANK_DETAILS,
+        message: httpStatusMessages.FAILED_TO_UPDATE_ASSET_DETAILS, // Corrected typo
         errorMsg: error.message,
         errorStack: error.stack,
       }),
