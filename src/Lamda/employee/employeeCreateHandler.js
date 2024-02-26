@@ -344,31 +344,28 @@ const updateBankDetails = async (event) => {
   console.log("Inside the bank details update function");
   try {
     const requestBody = JSON.parse(event.body);
-    const employeeId = event.pathParameters.employeeId;
+    const bankId = event.pathParameters.bankId; // Assuming bankId is present in the path parameters
 
-    // Scan bank details from DynamoDB based on employeeId
+    // Get bank details from DynamoDB based on bankId
     const params = {
       TableName: process.env.BANK_TABLE,
-      FilterExpression: "employeeId = :employeeId",
-      ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
+      Key: {
+        bankId: { N: bankId }, // Assuming bankId is numeric
       },
     };
-    const command = new ScanCommand(params);
-    const { Items } = await client.send(command);
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
 
     // If bank details not found
-    if (!Items || Items.length === 0) {
-      console.log("bank details not found for employee");
+    if (!Item) {
+      console.log("Bank details not found for bank ID:", bankId);
       return {
         statusCode: httpStatusCodes.NOT_FOUND,
         body: JSON.stringify({
-          message: httpStatusMessages.BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE,
+          message: httpStatusMessages.BANK_DETAILS_NOT_FOUND_FOR_BANK_ID,
         }),
       };
     }
-
-    const bankId = Items[0].bankId.N; // Assuming bankId is numeric
 
     // Update the bank details with the new values
     const updateParams = {
@@ -379,12 +376,12 @@ const updateBankDetails = async (event) => {
       UpdateExpression:
         "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType,  updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
-        ":bankName": requestBody.bankName,
-        ":bankAddress": requestBody.bankAddress,
-        ":ifscCode": requestBody.ifscCode,
-        ":accountHolderName": requestBody.accountHolderName,
-        ":accountNumber": parseInt(requestBody.accountNumber), // assuming accountNumber is numeric
-        ":accountType": requestBody.accountType,
+        ":bankName": requestBody.bankName || Item.bankName.S, // Keep the existing value if not provided in the request
+        ":bankAddress": requestBody.bankAddress || Item.bankAddress.S,
+        ":ifscCode": requestBody.ifscCode || Item.ifscCode.S,
+        ":accountHolderName": requestBody.accountHolderName || Item.accountHolderName.S,
+        ":accountNumber": parseInt(requestBody.accountNumber) || parseInt(Item.accountNumber.N), // Use existing value if not provided in the request
+        ":accountType": requestBody.accountType || Item.accountType.S,
         ":updatedDateTime": createdDate,
       }),
       ReturnValues: "ALL_NEW",
