@@ -374,7 +374,7 @@ const updateBankDetails = async (event) => {
         bankId: { N: bankId },
       },
       UpdateExpression:
-        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType,  updatedDateTime = :updatedDateTime",
+        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType, routingNumber =:routingNumber, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
         ":bankName": requestBody.bankName || Item.bankName.S, // Keep the existing value if not provided in the request
         ":bankAddress": requestBody.bankAddress || Item.bankAddress.S,
@@ -383,6 +383,7 @@ const updateBankDetails = async (event) => {
         ":accountNumber": parseInt(requestBody.accountNumber) || parseInt(Item.accountNumber.N), // Use existing value if not provided in the request
         ":accountType": requestBody.accountType || Item.accountType.S,
         ":updatedDateTime": createdDate,
+        ":routingNumber": routingNumber,
       }),
       ReturnValues: "ALL_NEW",
     };
