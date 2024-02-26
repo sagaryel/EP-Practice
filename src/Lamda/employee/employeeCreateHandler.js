@@ -410,7 +410,6 @@ const updateBankDetails = async (event) => {
     };
   }
 };
-
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
