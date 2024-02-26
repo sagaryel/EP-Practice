@@ -94,6 +94,15 @@ functions:
       - http:
           path: bank/{employeeId}
           method: GET
+  bankUpdate:
+    handler: src/Lamda/employee/employeeCreateHandler.updateBankDetails
+    name: bankUpdate
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: bank/{employeeId}
+          method: PUT
 resources:
   Resources:
     EmployeeTable:

@@ -298,7 +298,12 @@ const getBankDetailsByEmployeeId = async (event) => {
   console.log("Inside the get bank details by employee ID function");
   const employeeId = event.pathParameters.employeeId;
 
-  const response = { statusCode: httpStatusCodes.SUCCESS };
+  const response = { 
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  };
   try {
     const params = {
       TableName: process.env.BANK_TABLE,
@@ -334,9 +339,86 @@ const getBankDetailsByEmployeeId = async (event) => {
   return response;
 };
 
+
+const updateBankDetails = async (event) => {
+  console.log("Inside the bank details update function");
+  try {
+    const requestBody = JSON.parse(event.body);
+    const employeeId = event.pathParameters.employeeId;
+
+    // Scan bank details from DynamoDB based on employeeId
+    const params = {
+      TableName: process.env.BANK_TABLE,
+      FilterExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
+      },
+    };
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
+
+    // If bank details not found
+    if (!Items || Items.length === 0) {
+      console.log("bank details not found for employee");
+      return {
+        statusCode: httpStatusCodes.NOT_FOUND,
+        body: JSON.stringify({
+          message: httpStatusMessages.BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE,
+        }),
+      };
+    }
+
+    const bankId = Items[0].bankId.N; // Assuming bankId is numeric
+
+    // Update the bank details with the new values
+    const updateParams = {
+      TableName: process.env.BANK_DETAILS_TABLE,
+      Key: {
+        bankId: { N: bankId },
+      },
+      UpdateExpression:
+        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountType = :accountType, routingNumber = :routingNumber, updatedDateTime = :updatedDateTime",
+      ExpressionAttributeValues: marshall({
+        ":bankName": requestBody.bankName,
+        ":bankAddress": requestBody.bankAddress,
+        ":ifscCode": requestBody.ifscCode,
+        ":accountHolderName": requestBody.accountHolderName,
+        ":accountNumber": parseInt(requestBody.accountNumber), // assuming accountNumber is numeric
+        ":accountType": requestBody.accountType,
+        ":updatedDateTime": createdDate,
+        ":routingNumber": requestBody.routingNumber || null
+      }),
+      ReturnValues: "ALL_NEW",
+    };
+
+    const updateCommand = new UpdateItemCommand(updateParams);
+    const updatedBank = await client.send(updateCommand);
+    console.log("Successfully updated bank details.");
+
+    return {
+      statusCode: httpStatusCodes.SUCCESS,
+      body: JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS,
+        updatedBank: unmarshall(updatedBank.Attributes),
+      }),
+    };
+  } catch (error) {
+    console.error("Error updating bank details:", error);
+    return {
+      statusCode: httpStatusCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        message: httpStatusMessages.FAILED_TO_UPDATE_BANK_DETAILS,
+        errorMsg: error.message,
+        errorStack: error.stack,
+      }),
+    };
+  }
+};
+
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
   updateAssetDetails,
-  getBankDetailsByEmployeeId
+  getBankDetailsByEmployeeId,
+  updateBankDetails
 };
