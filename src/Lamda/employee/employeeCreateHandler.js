@@ -372,7 +372,7 @@ const updateBankDetails = async (event) => {
 
     // Update the bank details with the new values
     const updateParams = {
-      TableName: process.env.BANK_DETAILS_TABLE,
+      TableName: process.env.BANK_TABLE,
       Key: {
         bankId: { N: bankId },
       },
