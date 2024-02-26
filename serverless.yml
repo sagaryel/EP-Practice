@@ -27,7 +27,7 @@ custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
   assetTableName: asset-Details-${self:provider.stage}
-  bankTableName: bank
+  bankTableName: bank-${self:provider.stage}
 plugins:
   - serverless-iam-roles-per-function
 functions:
