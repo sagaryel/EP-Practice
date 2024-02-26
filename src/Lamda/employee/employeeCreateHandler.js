@@ -376,14 +376,14 @@ const updateBankDetails = async (event) => {
       UpdateExpression:
         "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, #at = :accountType, routingNumber = :routingNumber, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
-        ":bankName": requestBody.bankName || assetResult.Item.bankName.S,
-        ":bankAddress": requestBody.bankAddress || assetResult.Item.bankAddress.S,
-        ":ifscCode": requestBody.ifscCode || assetResult.Item.ifscCode.S,
-        ":accountHolderName": requestBody.accountHolderName || assetResult.Item.accountHolderName.S,
-        ":accountNumber": parseInt(requestBody.accountNumber) || parseInt(assetResult.Item.accountNumber.N),
-        ":accountType": requestBody.accountType || assetResult.Item.accountType.S,
+        ":bankName": requestBody.bankName,
+        ":bankAddress": requestBody.bankAddress,
+        ":ifscCode": requestBody.ifscCode !== null ? requestBody.ifscCode : (assetResult.Item && assetResult.Item.ifscCode.S) || null,
+        ":accountHolderName": requestBody.accountHolderName,
+        ":accountNumber": parseInt(requestBody.accountNumber),
+        ":accountType": requestBody.accountType,
         ":updatedDateTime": createdDate,
-        ":routingNumber": requestBody.routingNumber, // Assuming routingNumber is present in the requestBody
+        ":routingNumber":requestBody.routingNumber !== null ? requestBody.routingNumber : (assetResult.Item && assetResult.Item.routingNumber.S) || null,
       }),
       ExpressionAttributeNames: {
         "#at": "accountType",
