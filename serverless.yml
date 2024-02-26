@@ -101,7 +101,7 @@ functions:
     timeout: 120
     events:
       - http:
-          path: bank/{employeeId}
+          path: bank/{bankId}
           method: PUT
 resources:
   Resources:
