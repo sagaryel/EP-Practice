@@ -378,12 +378,12 @@ const updateBankDetails = async (event) => {
       ExpressionAttributeValues: marshall({
         ":bankName": requestBody.bankName,
         ":bankAddress": requestBody.bankAddress,
-        ":ifscCode": requestBody.ifscCode !== null ? requestBody.ifscCode : (assetResult.Item && assetResult.Item.ifscCode.S) || null,
+        ":ifscCode": requestBody.ifscCode !== null ? requestBody.ifscCode : null,
         ":accountHolderName": requestBody.accountHolderName,
         ":accountNumber": parseInt(requestBody.accountNumber),
         ":accountType": requestBody.accountType,
         ":updatedDateTime": createdDate,
-        ":routingNumber":requestBody.routingNumber !== null ? requestBody.routingNumber : (assetResult.Item && assetResult.Item.routingNumber.S) || null,
+        ":routingNumber":requestBody.routingNumber !== null ? requestBody.routingNumber : null,
       }),
       ExpressionAttributeNames: {
         "#at": "accountType",
