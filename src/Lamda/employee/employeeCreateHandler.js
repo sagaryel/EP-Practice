@@ -201,6 +201,11 @@ const getAssignmentsByEmployeeId = async (event) => {
 
 const updateAssetDetails = async (event) => {
   console.log("inside the asset update  details");
+  let response;
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+  };
+
   try {
     const requestBody = JSON.parse(event.body);
     const assetId = event.pathParameters.assetId;
@@ -218,17 +223,17 @@ const updateAssetDetails = async (event) => {
 
     // If asset not found
     if (!assetResult.Item) {
-      return {
+      response = {
         statusCode: 404,
+        headers,
         body: JSON.stringify({
           message: "Asset not found for the specified assetId",
         }),
       };
+      return response;
     }
 
-    const currentDateTime = moment().toISOString();
-
-    const assignedTOExist = await isAssignedToExists(requestBody.assignTo);
+    const assignedTOExist = await isAssignedToExists(requestBody.assignTo, assetId);
     if (assignedTOExist) {
       throw new Error(`The specified 'assignTo' ${requestBody.assignTo} is already assigned with an asset ID `);
     }
@@ -239,14 +244,13 @@ const updateAssetDetails = async (event) => {
       Key: {
         assetId: { N: assetId },
       },
-      UpdateExpression:
-        "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
+      UpdateExpression: "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
         ":assetsType": requestBody.assetsType,
         ":serialNumber": requestBody.serialNumber,
         ":status": requestBody.status,
         ":assignTo": requestBody.assignTo || null,
-        ":updatedDateTime": currentDateTime,
+        ":updatedDateTime": formattedDate,
       }),
       ExpressionAttributeNames: {
         "#st": "status",
@@ -258,8 +262,9 @@ const updateAssetDetails = async (event) => {
     const updatedAsset = await client.send(updateCommand);
     console.log("Successfully updated asset.");
 
-    return {
+    response = {
       statusCode: httpStatusCodes.SUCCESS,
+      headers,
       body: JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_UPDATED_ASSSET_DETAILS,
         updatedAsset: unmarshall(updatedAsset.Attributes),
@@ -267,8 +272,9 @@ const updateAssetDetails = async (event) => {
     };
   } catch (error) {
     console.error("Error updating asset details:", error);
-    return {
+    response = {
       statusCode: httpStatusCodes.BAD_REQUEST,
+      headers,
       body: JSON.stringify({
         message: httpStatusMessages.FAILED_TO_UPDATE_ASSSET_DETAILS,
         errorMsg: error.message,
@@ -276,6 +282,8 @@ const updateAssetDetails = async (event) => {
       }),
     };
   }
+
+  return response;
 };
 
 // Check if the email address already exists
