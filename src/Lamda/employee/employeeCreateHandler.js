@@ -398,7 +398,6 @@ const updateBankDetails = async (event) => {
 
     return {
       statusCode: httpStatusCodes.SUCCESS,
-      'Access-Control-Allow-Origin': '*',
       body: JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS, // Corrected typo
         updatedBank: unmarshall(updatedBank.Attributes),
