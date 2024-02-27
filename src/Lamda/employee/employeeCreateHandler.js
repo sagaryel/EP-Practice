@@ -250,7 +250,7 @@ const updateAssetDetails = async (event) => {
         ":serialNumber": requestBody.serialNumber,
         ":status": requestBody.status,
         ":assignTo": requestBody.assignTo || null,
-        ":updatedDateTime": formattedDate,
+        ":updatedDateTime": createdDate,
       }),
       ExpressionAttributeNames: {
         "#st": "status",
