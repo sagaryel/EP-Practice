@@ -355,10 +355,10 @@ const updateBankDetails = async (event) => {
     };
 
     const getCommand = new GetItemCommand(getParams);
-    const assetResult = await client.send(getCommand);
+    const bankResult = await client.send(getCommand);
 
     // If asset not found
-    if (!assetResult.Item) {
+    if (!bankResult.Item) {
       return {
         statusCode: 404,
         body: JSON.stringify({
@@ -374,7 +374,7 @@ const updateBankDetails = async (event) => {
         bankId: { N: bankId },
       },
       UpdateExpression:
-        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, #at = :accountType, routingNumber = :routingNumber, updatedDateTime = :updatedDateTime",
+        "SET bankName = :bankName, bankAddress = :bankAddress, ifscCode = :ifscCode, accountHolderName = :accountHolderName, accountNumber = :accountNumber, accountHolderResidentialAddress = :accountHolderResidentialAddress, #at = :accountType, routingNumber = :routingNumber, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
         ":bankName": requestBody.bankName,
         ":bankAddress": requestBody.bankAddress,
@@ -382,8 +382,9 @@ const updateBankDetails = async (event) => {
         ":accountHolderName": requestBody.accountHolderName,
         ":accountNumber": parseInt(requestBody.accountNumber),
         ":accountType": requestBody.accountType,
-        ":updatedDateTime": createdDate,
+        ":updatedDateTime": formattedDate,
         ":routingNumber":requestBody.routingNumber !== null ? requestBody.routingNumber : null,
+        ":accountHolderResidentialAddress": requestBody.accountHolderResidentialAddress,
       }),
       ExpressionAttributeNames: {
         "#at": "accountType",
@@ -392,14 +393,15 @@ const updateBankDetails = async (event) => {
     };
 
     const updateCommand = new UpdateItemCommand(updateParams);
-    const updatedAsset = await client.send(updateCommand);
+    const updatedBank = await client.send(updateCommand);
     console.log("Successfully updated Bank details.");
 
     return {
       statusCode: httpStatusCodes.SUCCESS,
+      'Access-Control-Allow-Origin': '*',
       body: JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS, // Corrected typo
-        updatedAsset: unmarshall(updatedAsset.Attributes),
+        updatedBank: unmarshall(updatedBank.Attributes),
       }),
     };
   } catch (error) {
