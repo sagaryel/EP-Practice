@@ -382,7 +382,7 @@ const updateBankDetails = async (event) => {
         ":accountHolderName": requestBody.accountHolderName,
         ":accountNumber": parseInt(requestBody.accountNumber),
         ":accountType": requestBody.accountType,
-        ":updatedDateTime": formattedDate,
+        ":updatedDateTime": createdDate,
         ":routingNumber":requestBody.routingNumber !== null ? requestBody.routingNumber : null,
         ":accountHolderResidentialAddress": requestBody.accountHolderResidentialAddress,
       }),
