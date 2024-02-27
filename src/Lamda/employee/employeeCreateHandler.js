@@ -342,6 +342,8 @@ const getBankDetailsByEmployeeId = async (event) => {
 
 const updateBankDetails = async (event) => {
   console.log("Inside the bank details update function");
+  let response;
+
   try {
     const requestBody = JSON.parse(event.body);
     const bankId = event.pathParameters.bankId;
@@ -359,12 +361,13 @@ const updateBankDetails = async (event) => {
 
     // If asset not found
     if (!bankResult.Item) {
-      return {
+      response = {
         statusCode: 404,
         body: JSON.stringify({
           message: "Bank details not found for bank ID",
         }),
       };
+      return response;
     }
 
     // Update the asset with the new values
@@ -396,7 +399,7 @@ const updateBankDetails = async (event) => {
     const updatedBank = await client.send(updateCommand);
     console.log("Successfully updated Bank details.");
 
-    return {
+    response = {
       statusCode: httpStatusCodes.SUCCESS,
       body: JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS, // Corrected typo
@@ -405,7 +408,7 @@ const updateBankDetails = async (event) => {
     };
   } catch (error) {
     console.error("Error updating bank details:", error);
-    return {
+    response = {
       statusCode: httpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         message: httpStatusMessages.FAILED_TO_UPDATE_BANK_DETAILS, // Corrected typo
@@ -414,6 +417,13 @@ const updateBankDetails = async (event) => {
       }),
     };
   }
+
+  // Set headers outside try-catch to ensure they're always included
+  response.headers = {
+    'Access-Control-Allow-Origin': '*',
+  };
+
+  return response;
 };
 module.exports = {
   createEmployee,
