@@ -355,6 +355,9 @@ const updateBankDetails = async (event) => {
   try {
     const requestBody = JSON.parse(event.body);
     const bankId = event.pathParameters.bankId;
+    if (!validateBankUpdateDetails(requestBody)) {
+      throw new Error("Required fields are missing.");
+    }
 
     // Get asset details from DynamoDB based on assetId
     const getParams = {
