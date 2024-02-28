@@ -48,4 +48,5 @@ function isValidRoutingNumber(routingNumber) {
 
 module.exports = {
     validateEmployeeDetails,
+    validateBankUpdateDetails
 };
