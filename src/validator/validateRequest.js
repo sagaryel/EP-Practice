@@ -24,7 +24,7 @@ const validateBankUpdateDetails = (requestBody) => {
     } else if (routingNumber && !isValidRoutingNumber(routingNumber)) {
         throw new Error('Invalid routing number, please add a 9 digit routing number');
     }else if (!isValidAccountType(accountType)) {
-        throw new Error('Invalid account type, please choose "savings" or "salary"');
+        throw new Error('Invalid account type, please choose savings or salary');
     }
     return true;
 };
