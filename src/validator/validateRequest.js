@@ -23,8 +23,9 @@ const validateBankUpdateDetails = (requestBody) => {
         throw new Error('Invalid account number, please add a 12 digit account number');
     } else if (routingNumber && !isValidRoutingNumber(routingNumber)) {
         throw new Error('Invalid routing number, please add a 9 digit routing number');
+    }else if (!isValidAccountType(accountType)) {
+        throw new Error('Invalid account type, please choose "savings" or "salary"');
     }
-    // You can add more specific validation logic for each field if needed
     return true;
 };
 
@@ -41,6 +42,9 @@ function isValidRoutingNumber(routingNumber) {
 
     // Test if the provided routing number matches the pattern
     return regex.test(routingNumber);
+}
+function isValidAccountType(accountType) {
+    return accountType === 'savings' || accountType === 'salary';
 }
 
 
