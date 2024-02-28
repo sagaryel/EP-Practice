@@ -13,7 +13,7 @@ const {
   httpStatusCodes,
   httpStatusMessages,
 } = require("../../environment/appconfig");
-const { validateEmployeeDetails } = require("../../validator/validateRequest");
+const { validateEmployeeDetails, validateBankUpdateDetails } = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
 //const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
 const createdDate = new Date().toISOString();
