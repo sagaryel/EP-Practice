@@ -31,13 +31,13 @@ const validateBankUpdateDetails = (requestBody) => {
     return true;
   };
 
-function isValidAccountNumber(accountNumber) {
-    // Regular expression to match exactly 11 digits
-    const regex = /^[0-9]{12}$/;
-
+  function isValidAccountNumber(accountNumber) {
+    // Regular expression to match between 5 to 16 digits
+    const regex = /^[0-9]{5,16}$/;
+  
     // Test if the provided account number matches the pattern
     return regex.test(accountNumber);
-}
+  }
 function isValidRoutingNumber(routingNumber) {
     // Regular expression to match exactly 9 digits
     const regex = /^\d{9}$/;
