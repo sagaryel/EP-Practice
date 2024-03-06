@@ -445,9 +445,9 @@ const updatePfDetails = async (event) => {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
 
-    if (!validatePfUpdateDetails(requestBody)) {
-      throw new Error("Required fields are missing.");
-    }
+    // if (!validatePfUpdateDetails(requestBody)) {
+    //   throw new Error("Required fields are missing.");
+    // }
 
     const params = {
       TableName: process.env.PF_ESI_TABLE,
@@ -524,7 +524,7 @@ const updatePfDetails = async (event) => {
     response = {
       statusCode: httpStatusCodes.SUCCESS,
       body: JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS,
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_OR_CREATED_PF_DETAILS,
         updatedBank: unmarshall(updatedBank.Attributes),
       }),
     };
@@ -533,7 +533,7 @@ const updatePfDetails = async (event) => {
     response = {
       statusCode: httpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
-        message: httpStatusMessages.FAILED_TO_UPDATE_BANK_DETAILS,
+        message: httpStatusMessages.FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS,
         errorMsg: error.message,
         errorStack: error.stack,
       }),
