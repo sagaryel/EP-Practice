@@ -24,7 +24,7 @@ provider:
         - !GetAtt AssignmentTable.Arn
         - !GetAtt AssetTable.Arn
         - !GetAtt BankTable.Arn
-        - !GetAtt pfDetailsTable.Arn
+        - !GetAtt PfDetailsTable.Arn
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
@@ -183,7 +183,7 @@ resources:
         ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
-    pfdDetailsTable:
+    PfDetailsTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: ${self:custom.pfTableName}
