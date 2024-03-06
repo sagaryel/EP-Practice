@@ -13,7 +13,7 @@ const {
   httpStatusCodes,
   httpStatusMessages,
 } = require("../../environment/appconfig");
-const { validateEmployeeDetails, validateBankUpdateDetails } = require("../../validator/validateRequest");
+const { validateEmployeeDetails, validateBankUpdateDetails, validatePfUpdateDetails } = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
 //const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
 const createdDate = new Date().toISOString();
@@ -436,10 +436,122 @@ const updateBankDetails = async (event) => {
 
   return response;
 };
+
+const updatePfDetails = async (event) => {
+  console.log("Inside the PF details update function");
+  let response;
+
+  try {
+    const requestBody = JSON.parse(event.body);
+    const employeeId = event.pathParameters.employeeId;
+
+    if (!validatePfUpdateDetails(requestBody)) {
+      throw new Error("Required fields are missing.");
+    }
+
+    const params = {
+      TableName: process.env.PF_ESI_TABLE,
+      FilterExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId },
+      },
+    };
+
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
+
+    let updateParams = {
+      TableName: process.env.PF_ESI_TABLE,
+      Key: {
+        pfId: { N: pfId },
+      },
+      ReturnValues: "ALL_NEW",
+    };
+
+    if (Items.length !== 0) {
+      // Update the PF Values with the new values
+      updateParams.UpdateExpression = `
+        SET UAN_Number = :uan,
+            PF_Number = :pf,
+            PF_Joining_Date = :pfJoinDate,
+            #ESI_Number = :esi,
+            ESI_Joining_Date = :esiJoinDate,
+            ESI_Leaving_Date = :esiLeaveDate,
+            updatedDateTime = :updatedDateTime
+      `;
+
+      updateParams.ExpressionAttributeValues = marshall({
+        ":uan": requestBody.uanNumber,
+        ":pf": requestBody.pfNumber,
+        ":pfJoinDate": requestBody.pfJoiningDate,
+        ":esi": requestBody.esiNumber,
+        ":esiJoinDate": requestBody.esiJoiningDate,
+        ":esiLeaveDate": requestBody.esiLeavingDate,
+        ":updatedDateTime": createdDate,
+      });
+    } else {
+      updateParams.UpdateExpression = `
+        SET uanNumber = :uan,
+            serialNumber = :serialNumber,
+            pfNumber = :pf,
+            pfJoiningDate = :pfJoinDate,
+            #esiNumber = :esi,
+            esiJoiningDate = :esiJoinDate,
+            esiLeavingDate = :esiLeaveDate,
+            createdDateTime = :createdDateTime
+      `;
+
+      updateParams.ExpressionAttributeValues = marshall({
+        ":serialNumber": nextSerialNumber,
+        ":createdDateTime": createdDate,
+        ":uan": requestBody.uanNumber,
+        ":pf": requestBody.pfNumber,
+        ":pfJoinDate": requestBody.pfJoiningDate,
+        ":esi": requestBody.esiNumber,
+        ":esiJoinDate": requestBody.esiJoiningDate,
+        ":esiLeaveDate": requestBody.esiLeavingDate,
+      });
+    }
+
+    updateParams.ExpressionAttributeNames = {
+      "#esiNumber": "esi",
+    };
+
+    const updateCommand = new UpdateItemCommand(updateParams);
+    const updatedBank = await client.send(updateCommand);
+    console.log("Successfully created or updated PF/ESI details.");
+
+    response = {
+      statusCode: httpStatusCodes.SUCCESS,
+      body: JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_BANK_DETAILS,
+        updatedBank: unmarshall(updatedBank.Attributes),
+      }),
+    };
+  } catch (error) {
+    console.error("Error creating or updating PF/ESI details:", error);
+    response = {
+      statusCode: httpStatusCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        message: httpStatusMessages.FAILED_TO_UPDATE_BANK_DETAILS,
+        errorMsg: error.message,
+        errorStack: error.stack,
+      }),
+    };
+  }
+
+  // Set headers outside try-catch to ensure they're always included
+  response.headers = {
+    'Access-Control-Allow-Origin': '*',
+  };
+
+  return response;
+};
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
   updateAssetDetails,
   getBankDetailsByEmployeeId,
-  updateBankDetails
+  updateBankDetails,
+  updatePfDetails
 };

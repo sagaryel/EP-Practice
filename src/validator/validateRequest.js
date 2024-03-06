@@ -53,9 +53,35 @@ function isValidatedIfsc(ifscCode) {
     return regex.test(ifscCode);
 }
 
+const validatePfUpdateDetails = (requestBody) => {
+    const { uanNumber, pfNumber, pfJoiningDate, esiNumber, esiJoiningDate, esiLeavingDate } = requestBody;
+  
+    // Check if required fields are missing
+    if (!uanNumber || !pfNumber || !pfJoiningDate || !esiNumber || !esiJoiningDate || esiLeavingDate) {
+        return false;
+    } else if (!isValidUANNumber(uanNumber)) {
+        throw new Error('Invalid UAN number, please add a 12 digit UAN number');
+    } else if (!isValidPFNumber(pfNumber)) {
+        throw new Error('Invalid PF Number, please add a 22 digit PF Number');
+    }else if (!isValidESINumber(esiNumber)) {
+      throw new Error('Invalid ESI Number, please add a 13 digit ESI Number');
+    }
+    return true;
+  };
+
+const isValidUANNumber = (uanNumber) => {
+    return /^\d{12}$/.test(uanNumber);
+};
+const isValidPFNumber = (pfNumber) => {
+    return /^[a-zA-Z0-9]{22}$/.test(pfNumber);
+};
+const isValidESINumber = (esiNumber) => {
+    return /^\d{13}$/.test(esiNumber);
+};
 
 
 module.exports = {
     validateEmployeeDetails,
-    validateBankUpdateDetails
+    validateBankUpdateDetails,
+    validatePfUpdateDetails
 };

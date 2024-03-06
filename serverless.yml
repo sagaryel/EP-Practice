@@ -9,6 +9,7 @@ provider:
     ASSIGNMENTS_TABLE: ${self:custom.assignmentTableName}
     ASSETS_TABLE: ${self:custom.assetTableName}
     BANK_TABLE: ${self:custom.bankTableName}
+    PF_ESI_TABLE : ${self:custom.pfTableName}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -23,11 +24,13 @@ provider:
         - !GetAtt AssignmentTable.Arn
         - !GetAtt AssetTable.Arn
         - !GetAtt BankTable.Arn
+        - !GetAtt pfDetailsTable.Arn
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
   assetTableName: asset-Details-${self:provider.stage}
   bankTableName: bank-${self:provider.stage}
+  pfTableName: pf-Details
 plugins:
   - serverless-iam-roles-per-function
 functions:
@@ -103,6 +106,15 @@ functions:
       - http:
           path: bank/update/{bankId}
           method: PUT
+  pfEsiUpdate:
+    handler: src/Lamda/employee/employeeCreateHandler.updatePfDetails
+    name: PfUpdate
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: pf/{employeeId}
+          method: PUT
 resources:
   Resources:
     EmployeeTable:
@@ -167,6 +179,19 @@ resources:
             AttributeType: N
         KeySchema:
           - AttributeName: bankId
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    pfdDetailsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.pfTableName}
+        AttributeDefinitions:
+          - AttributeName: pfId
+            AttributeType: N
+        KeySchema:
+          - AttributeName: pfId
             KeyType: HASH
         ProvisionedThroughput:
             ReadCapacityUnits: 1
