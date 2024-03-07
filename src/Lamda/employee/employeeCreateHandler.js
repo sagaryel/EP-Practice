@@ -456,7 +456,7 @@ const updatePfDetails = async (event) => {
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
 
-    if (Items || Items.length !== 0) {
+    if (Items && Items.length > 0) {
       // Update the PF Values with the new values
       const pfId = Items[0].pfId.N;
       let updateParams = {
