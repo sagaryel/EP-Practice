@@ -460,20 +460,7 @@ const updatePfDetails = async (event) => {
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
     console.log("next Serial Number:", nextSerialNumber);
 
-    const params = {
-      TableName: process.env.PF_ESI_TABLE,
-      FilterExpression: "employeeId = :employeeId",
-      ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId },
-      },
-    };
-
-    const command = new ScanCommand(params);
-    const { Items } = await client.send(command);
-    console.log("Items:", Items);
-
-    if (Items.length === 0) {
-      console.log("Inside the PF details create function");
+      
       const params = {
         TableName: process.env.PF_ESI_TABLE,
         Item: marshall({
@@ -494,51 +481,6 @@ const updatePfDetails = async (event) => {
         message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
         createResult,
       });
-    } else {
-      // Update the PF Values with the new values
-      console.log("Inside the PF details update function");
-      const pfId = Items[0].pfId.N;
-      const updateParams = {
-        TableName: process.env.PF_ESI_TABLE,
-        Key: {
-          pfId: { N: pfId }, // You need to define pfId here
-        },
-        UpdateExpression: `
-          SET uanNumber = :uan,
-              pfNumber = :pf,
-              pfJoiningDate = :pfJoinDate,
-              #esiNumber = :esi,
-              esiJoiningDate = :esiJoinDate,
-              esiLeavingDate = :esiLeaveDate,
-              updatedDateTime = :updatedDateTime
-        `,
-        ExpressionAttributeValues: marshall({
-          ":uan": requestBody.uanNumber,
-          ":pf": requestBody.pfNumber,
-          ":pfJoinDate": requestBody.pfJoiningDate,
-          ":esi": requestBody.esiNumber,
-          ":esiJoinDate": requestBody.esiJoiningDate,
-          ":esiLeaveDate": requestBody.esiLeavingDate,
-          ":updatedDateTime": createdDate,
-        }),
-        ExpressionAttributeNames: {
-          "#esiNumber": "esi",
-        },
-        ReturnValues: "ALL_NEW",
-      };
-
-      const updateCommand = new UpdateItemCommand(updateParams);
-      const updatedPfDetails = await client.send(updateCommand);
-      console.log("Successfully updated PF/ESI details.");
-
-      response = {
-        statusCode: httpStatusCodes.SUCCESS,
-        body: JSON.stringify({
-          message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
-          updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
-        }),
-      };
-    }
   } catch (error) {
     console.error("Error creating or updating PF/ESI details:", error);
     response = {
