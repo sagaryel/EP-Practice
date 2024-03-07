@@ -491,10 +491,13 @@ const updatePfDetails = async (event) => {
 
       const pfResult = await client.send(new PutItemCommand(params));
       console.log("Successfully created PF/EPF details.");
-      response.body = JSON.stringify({
+      response = {
         statusCode: httpStatusCodes.SUCCESS,
-        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-      });
+        body: JSON.stringify({
+          message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+          pfResult: unmarshall(pfResult.Attributes),
+        }),
+      };
     } else {
       // Update the PF Values with the new values
       console.log("Inside the PF details update function");
