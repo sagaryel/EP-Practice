@@ -460,27 +460,26 @@ const updatePfDetails = async (event) => {
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
     console.log("next Serial Number:", nextSerialNumber);
 
-      
-      const params = {
-        TableName: process.env.PF_ESI_TABLE,
-        Item: marshall({
-          pfId: nextSerialNumber,
-          employeeId: employeeId,
-          uanNumber: requestBody.uanNumber,
-          pfNumber: requestBody.pfNumber,
-          pfJoiningDate: requestBody.pfJoiningDate,
-          esiNumber: requestBody.esiNumber,
-          esiJoiningDate: requestBody.esiJoiningDate,
-          esiLeavingDate: requestBody.esiLeavingDate,
-          createdDateTime: createdDate,
-        }),
-      };
+    const params = {
+      TableName: process.env.PF_ESI_TABLE,
+      Item: marshall({
+        pfId: nextSerialNumber,
+        employeeId: employeeId,
+        uanNumber: requestBody.uanNumber,
+        pfNumber: requestBody.pfNumber,
+        pfJoiningDate: requestBody.pfJoiningDate,
+        esiNumber: requestBody.esiNumber,
+        esiJoiningDate: requestBody.esiJoiningDate,
+        esiLeavingDate: requestBody.esiLeavingDate,
+        createdDateTime: createdDate,
+      }),
+    };
 
-      const createResult = await client.send(new PutItemCommand(params));
-      response = JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-        createResult,
-      });
+    const createResult = await client.send(new PutItemCommand(params));
+    console.log("successfully created a pf details:", createResult);
+    response = JSON.stringify({
+      message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+    });
   } catch (error) {
     console.error("Error creating or updating PF/ESI details:", error);
     response = {
