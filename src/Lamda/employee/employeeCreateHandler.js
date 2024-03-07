@@ -459,8 +459,9 @@ const updatePfDetails = async (event) => {
 
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
-
-    if (!Items && !Items.length > 0) {
+    console.log("Items:", Items);
+    
+    if (Items.length === 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
