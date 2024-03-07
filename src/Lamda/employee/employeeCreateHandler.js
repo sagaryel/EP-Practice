@@ -509,8 +509,7 @@ const createPfDetails = async (event) => {
   };
   try {
     const requestBody = JSON.parse(event.body);
-
-
+    const employeeId = event.pathParameters.employeeId;
     // Fetch the highest highestSerialNumber from the DynamoDB table
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
