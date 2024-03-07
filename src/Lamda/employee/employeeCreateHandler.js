@@ -438,7 +438,7 @@ const updateBankDetails = async (event) => {
 };
 
 const updatePfDetails = async (event) => {
-  console.log("Inside the PF details update function");
+  console.log("Inside the PF details function");
   let response;
 
   try {
@@ -448,7 +448,7 @@ const updatePfDetails = async (event) => {
     console.log("Highest Serial Number:", highestSerialNumber);
     const nextSerialNumber =
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
-
+    console.log("next Serial Number:", nextSerialNumber);
     const params = {
       TableName: process.env.PF_ESI_TABLE,
       FilterExpression: "employeeId = :employeeId",
@@ -462,6 +462,7 @@ const updatePfDetails = async (event) => {
 
     if (Items && Items.length > 0) {
       // Update the PF Values with the new values
+      console.log("Inside the PF details update function");
       const pfId = Items[0].pfId.N;
       let updateParams = {
         TableName: process.env.PF_ESI_TABLE,
@@ -504,6 +505,7 @@ const updatePfDetails = async (event) => {
         }),
       };
     } else {
+      console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
         Item: marshall({
