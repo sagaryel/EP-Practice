@@ -490,7 +490,7 @@ const updatePfDetails = async (event) => {
       };
 
       const createResult = await client.send(new PutItemCommand(params));
-      response.body = JSON.stringify({
+      response = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
         createResult,
       });
