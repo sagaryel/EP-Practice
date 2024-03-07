@@ -16,7 +16,8 @@ const httpStatusMessages = {
     BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE : ' bank details not found for employee',
     FAILED_TO_UPDATE_BANK_DETAILS : 'failed to update bank details',
     SUCCESSFULLY_UPDATED_BANK_DETAILS : 'successfully updated bank details',
-    SUCCESSFULLY_UPDATED_OR_CREATED_PF_DETAILS : 'successfully updated or created pf details',
+    SUCCESSFULLY_UPDATED_PF_DETAILS : 'successfully updated pf details',
+    SUCCESSFULLY_CREATED_PF_DETAILS : 'successfully created pf details',
     FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS : 'failed to update or create pf details'
 }
 

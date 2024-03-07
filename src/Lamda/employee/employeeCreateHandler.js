@@ -445,10 +445,6 @@ const updatePfDetails = async (event) => {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
 
-    // if (!validatePfUpdateDetails(requestBody)) {
-    //   throw new Error("Required fields are missing.");
-    // }
-
     const params = {
       TableName: process.env.PF_ESI_TABLE,
       FilterExpression: "employeeId = :employeeId",
@@ -459,75 +455,70 @@ const updatePfDetails = async (event) => {
 
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
-
-    let updateParams = {
-      TableName: process.env.PF_ESI_TABLE,
-      Key: {
-        pfId: { N: pfId },
-      },
-      ReturnValues: "ALL_NEW",
-    };
-
-    if (Items.length !== 0) {
+  
+    if (!Items || Items.length === 0) {
       // Update the PF Values with the new values
-      updateParams.UpdateExpression = `
-        SET UAN_Number = :uan,
-            PF_Number = :pf,
-            PF_Joining_Date = :pfJoinDate,
-            #ESI_Number = :esi,
-            ESI_Joining_Date = :esiJoinDate,
-            ESI_Leaving_Date = :esiLeaveDate,
-            updatedDateTime = :updatedDateTime
-      `;
+      let updateParams = {
+        TableName: process.env.PF_ESI_TABLE,
+        Key: {
+          pfId: { N: pfId }, // You need to define pfId here
+        },
+        UpdateExpression: `
+          SET uanNumber = :uan,
+              pfNumber = :pf,
+              pfJoiningDate = :pfJoinDate,
+              #esiNumber = :esi,
+              esiJoiningDate = :esiJoinDate,
+              esiLeavingDate = :esiLeaveDate,
+              updatedDateTime = :updatedDateTime
+        `,
+        ExpressionAttributeValues: marshall({
+          ":uan": requestBody.uanNumber,
+          ":pf": requestBody.pfNumber,
+          ":pfJoinDate": requestBody.pfJoiningDate,
+          ":esi": requestBody.esiNumber,
+          ":esiJoinDate": requestBody.esiJoiningDate,
+          ":esiLeaveDate": requestBody.esiLeavingDate,
+          ":updatedDateTime": createdDate,
+        }),
+        ExpressionAttributeNames: {
+          "#esiNumber": "esi",
+        },
+        ReturnValues: "ALL_NEW",
+      };
 
-      updateParams.ExpressionAttributeValues = marshall({
-        ":uan": requestBody.uanNumber,
-        ":pf": requestBody.pfNumber,
-        ":pfJoinDate": requestBody.pfJoiningDate,
-        ":esi": requestBody.esiNumber,
-        ":esiJoinDate": requestBody.esiJoiningDate,
-        ":esiLeaveDate": requestBody.esiLeavingDate,
-        ":updatedDateTime": createdDate,
-      });
+      const updateCommand = new UpdateItemCommand(updateParams);
+      const updatedPfDetails = await client.send(updateCommand);
+      console.log("Successfully created or updated PF/ESI details.");
+
+      response = {
+        statusCode: httpStatusCodes.SUCCESS,
+        body: JSON.stringify({
+          message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
+          updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
+        }),
+      };
     } else {
-      updateParams.UpdateExpression = `
-        SET uanNumber = :uan,
-            serialNumber = :serialNumber,
-            pfNumber = :pf,
-            pfJoiningDate = :pfJoinDate,
-            #esiNumber = :esi,
-            esiJoiningDate = :esiJoinDate,
-            esiLeavingDate = :esiLeaveDate,
-            createdDateTime = :createdDateTime
-      `;
-
-      updateParams.ExpressionAttributeValues = marshall({
-        ":serialNumber": nextSerialNumber,
-        ":createdDateTime": createdDate,
-        ":uan": requestBody.uanNumber,
-        ":pf": requestBody.pfNumber,
-        ":pfJoinDate": requestBody.pfJoiningDate,
-        ":esi": requestBody.esiNumber,
-        ":esiJoinDate": requestBody.esiJoiningDate,
-        ":esiLeaveDate": requestBody.esiLeavingDate,
+      const params = {
+        TableName: process.env.PF_ESI_TABLE,
+        Item: marshall({
+          pfId: nextSerialNumber, // You need to define nextSerialNumber here
+          employeeId: employeeId,
+          uanNumber: requestBody.uanNumber,
+          pfNumber: requestBody.pfNumber,
+          pfJoiningDate: requestBody.pfJoiningDate,
+          esiNumber: requestBody.esiNumber,
+          esiJoiningDate: requestBody.esiJoiningDate,
+          esiLeavingDate: requestBody.esiLeavingDate,
+          createdDateTime: createdDate,
+        }),
+      };
+      const pfResult = await client.send(new PutItemCommand(params));
+      response = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        pfResult,
       });
     }
-
-    updateParams.ExpressionAttributeNames = {
-      "#esiNumber": "esi",
-    };
-
-    const updateCommand = new UpdateItemCommand(updateParams);
-    const updatedBank = await client.send(updateCommand);
-    console.log("Successfully created or updated PF/ESI details.");
-
-    response = {
-      statusCode: httpStatusCodes.SUCCESS,
-      body: JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_UPDATED_OR_CREATED_PF_DETAILS,
-        updatedBank: unmarshall(updatedBank.Attributes),
-      }),
-    };
   } catch (error) {
     console.error("Error creating or updating PF/ESI details:", error);
     response = {
