@@ -478,6 +478,7 @@ const updatePfDetails = async (event) => {
     const createResult = await client.send(new PutItemCommand(params));
     console.log("successfully created a pf details:", createResult);
     response = JSON.stringify({
+      statusCode: httpStatusCodes.SUCCESS,
       message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
     });
   } catch (error) {
