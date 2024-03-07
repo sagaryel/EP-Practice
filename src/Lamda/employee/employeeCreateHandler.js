@@ -13,7 +13,11 @@ const {
   httpStatusCodes,
   httpStatusMessages,
 } = require("../../environment/appconfig");
-const { validateEmployeeDetails, validateBankUpdateDetails, validatePfUpdateDetails } = require("../../validator/validateRequest");
+const {
+  validateEmployeeDetails,
+  validateBankUpdateDetails,
+  validatePfUpdateDetails,
+} = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
 //const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
 const createdDate = new Date().toISOString();
@@ -203,7 +207,7 @@ const updateAssetDetails = async (event) => {
   console.log("inside the asset update  details");
   let response;
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    "Access-Control-Allow-Origin": "*",
   };
 
   try {
@@ -235,7 +239,9 @@ const updateAssetDetails = async (event) => {
 
     const assignedTOExist = await isAssignedToExists(requestBody.assignTo);
     if (assignedTOExist) {
-      throw new Error(`The specified 'assignTo' ${requestBody.assignTo} is already assigned with an asset ID `);
+      throw new Error(
+        `The specified 'assignTo' ${requestBody.assignTo} is already assigned with an asset ID `
+      );
     }
 
     // Update the asset with the new values
@@ -244,7 +250,8 @@ const updateAssetDetails = async (event) => {
       Key: {
         assetId: { N: assetId },
       },
-      UpdateExpression: "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
+      UpdateExpression:
+        "SET assetsType = :assetsType, serialNumber = :serialNumber, assignTo = :assignTo, #st = :status, updatedDateTime = :updatedDateTime",
       ExpressionAttributeValues: marshall({
         ":assetsType": requestBody.assetsType,
         ":serialNumber": requestBody.serialNumber,
@@ -306,11 +313,11 @@ const getBankDetailsByEmployeeId = async (event) => {
   console.log("Inside the get bank details by employee ID function");
   const employeeId = event.pathParameters.employeeId;
 
-  const response = { 
+  const response = {
     statusCode: httpStatusCodes.SUCCESS,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   };
   try {
     const params = {
@@ -332,7 +339,8 @@ const getBankDetailsByEmployeeId = async (event) => {
     } else {
       console.log("Successfully retrived bank details for employee.");
       response.body = JSON.stringify({
-        message:httpStatusMessages.SUCCESSFULLY_RETRIEVED_BANK_DETAILS_FOR_EMPLOYEE,
+        message:
+          httpStatusMessages.SUCCESSFULLY_RETRIEVED_BANK_DETAILS_FOR_EMPLOYEE,
         data: Items.map((item) => unmarshall(item)), // Unmarshalling each item
       });
     }
@@ -346,7 +354,6 @@ const getBankDetailsByEmployeeId = async (event) => {
   }
   return response;
 };
-
 
 const updateBankDetails = async (event) => {
   console.log("Inside the bank details update function");
@@ -392,13 +399,16 @@ const updateBankDetails = async (event) => {
       ExpressionAttributeValues: marshall({
         ":bankName": requestBody.bankName,
         ":bankAddress": requestBody.bankAddress,
-        ":ifscCode": requestBody.ifscCode !== null ? requestBody.ifscCode : null,
+        ":ifscCode":
+          requestBody.ifscCode !== null ? requestBody.ifscCode : null,
         ":accountHolderName": requestBody.accountHolderName,
         ":accountNumber": parseInt(requestBody.accountNumber),
         ":accountType": requestBody.accountType,
         ":updatedDateTime": createdDate,
-        ":routingNumber":requestBody.routingNumber !== null ? requestBody.routingNumber : null,
-        ":accountHolderResidentialAddress": requestBody.accountHolderResidentialAddress,
+        ":routingNumber":
+          requestBody.routingNumber !== null ? requestBody.routingNumber : null,
+        ":accountHolderResidentialAddress":
+          requestBody.accountHolderResidentialAddress,
       }),
       ExpressionAttributeNames: {
         "#at": "accountType",
@@ -431,7 +441,7 @@ const updateBankDetails = async (event) => {
 
   // Set headers outside try-catch to ensure they're always included
   response.headers = {
-    'Access-Control-Allow-Origin': '*',
+    "Access-Control-Allow-Origin": "*",
   };
 
   return response;
@@ -446,7 +456,8 @@ const updatePfDetails = async (event) => {
     const employeeId = event.pathParameters.employeeId;
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
     console.log("next Serial Number:", nextSerialNumber);
 
     const params = {
@@ -460,13 +471,13 @@ const updatePfDetails = async (event) => {
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
     console.log("Items:", Items);
-    
+
     if (Items.length === 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
         Item: marshall({
-          pfId: nextSerialNumber, 
+          pfId: nextSerialNumber,
           employeeId: employeeId,
           uanNumber: requestBody.uanNumber,
           pfNumber: requestBody.pfNumber,
@@ -479,9 +490,12 @@ const updatePfDetails = async (event) => {
       };
 
       const pfResult = await client.send(new PutItemCommand(params));
-      console.log("Successfully created PF/ESI details.");
       response = JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        statusCode: httpStatusCodes.SUCCESS,
+        body: JSON.stringify({
+          message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+          pfResult,
+        }),
       });
     } else {
       // Update the PF Values with the new values
@@ -540,7 +554,7 @@ const updatePfDetails = async (event) => {
     };
   }
   response.headers = {
-    'Access-Control-Allow-Origin': '*',
+    "Access-Control-Allow-Origin": "*",
   };
 
   return response;
@@ -551,5 +565,5 @@ module.exports = {
   updateAssetDetails,
   getBankDetailsByEmployeeId,
   updateBankDetails,
-  updatePfDetails
+  updatePfDetails,
 };
