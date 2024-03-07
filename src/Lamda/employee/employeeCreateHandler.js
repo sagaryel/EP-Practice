@@ -444,6 +444,10 @@ const updatePfDetails = async (event) => {
   try {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
+    const highestSerialNumber = await getHighestSerialNumber();
+    console.log("Highest Serial Number:", highestSerialNumber);
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     const params = {
       TableName: process.env.PF_ESI_TABLE,
