@@ -466,7 +466,7 @@ const updatePfDetails = async (event) => {
       const params = {
         TableName: process.env.PF_ESI_TABLE,
         Item: marshall({
-          pfId: nextSerialNumber, // You need to define nextSerialNumber here
+          pfId: nextSerialNumber, 
           employeeId: employeeId,
           uanNumber: requestBody.uanNumber,
           pfNumber: requestBody.pfNumber,
@@ -479,9 +479,9 @@ const updatePfDetails = async (event) => {
       };
 
       const pfResult = await client.send(new PutItemCommand(params));
+      console.log("Successfully created PF/ESI details.");
       response = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-        pfResult,
       });
     } else {
       // Update the PF Values with the new values
@@ -539,8 +539,6 @@ const updatePfDetails = async (event) => {
       }),
     };
   }
-
-  // Set headers outside try-catch to ensure they're always included
   response.headers = {
     'Access-Control-Allow-Origin': '*',
   };
