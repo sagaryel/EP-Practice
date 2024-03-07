@@ -446,9 +446,9 @@ const updatePfDetails = async (event) => {
     const employeeId = event.pathParameters.employeeId;
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber =
-      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
     console.log("next Serial Number:", nextSerialNumber);
+
     const params = {
       TableName: process.env.PF_ESI_TABLE,
       FilterExpression: "employeeId = :employeeId",
@@ -460,11 +460,33 @@ const updatePfDetails = async (event) => {
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
 
-    if (Items && Items.length > 0) {
+    if (!Items && !Items.length > 0) {
+      console.log("Inside the PF details create function");
+      const params = {
+        TableName: process.env.PF_ESI_TABLE,
+        Item: marshall({
+          pfId: nextSerialNumber, // You need to define nextSerialNumber here
+          employeeId: employeeId,
+          uanNumber: requestBody.uanNumber,
+          pfNumber: requestBody.pfNumber,
+          pfJoiningDate: requestBody.pfJoiningDate,
+          esiNumber: requestBody.esiNumber,
+          esiJoiningDate: requestBody.esiJoiningDate,
+          esiLeavingDate: requestBody.esiLeavingDate,
+          createdDateTime: createdDate,
+        }),
+      };
+
+      const pfResult = await client.send(new PutItemCommand(params));
+      response = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        pfResult,
+      });
+    } else {
       // Update the PF Values with the new values
       console.log("Inside the PF details update function");
       const pfId = Items[0].pfId.N;
-      let updateParams = {
+      const updateParams = {
         TableName: process.env.PF_ESI_TABLE,
         Key: {
           pfId: { N: pfId }, // You need to define pfId here
@@ -495,7 +517,7 @@ const updatePfDetails = async (event) => {
 
       const updateCommand = new UpdateItemCommand(updateParams);
       const updatedPfDetails = await client.send(updateCommand);
-      console.log("Successfully created or updated PF/ESI details.");
+      console.log("Successfully updated PF/ESI details.");
 
       response = {
         statusCode: httpStatusCodes.SUCCESS,
@@ -504,27 +526,6 @@ const updatePfDetails = async (event) => {
           updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
         }),
       };
-    } else {
-      console.log("Inside the PF details create function");
-      const params = {
-        TableName: process.env.PF_ESI_TABLE,
-        Item: marshall({
-          pfId: nextSerialNumber, // You need to define nextSerialNumber here
-          employeeId: employeeId,
-          uanNumber: requestBody.uanNumber,
-          pfNumber: requestBody.pfNumber,
-          pfJoiningDate: requestBody.pfJoiningDate,
-          esiNumber: requestBody.esiNumber,
-          esiJoiningDate: requestBody.esiJoiningDate,
-          esiLeavingDate: requestBody.esiLeavingDate,
-          createdDateTime: createdDate,
-        }),
-      };
-      const pfResult = await client.send(new PutItemCommand(params));
-      response = JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-        pfResult,
-      });
     }
   } catch (error) {
     console.error("Error creating or updating PF/ESI details:", error);
