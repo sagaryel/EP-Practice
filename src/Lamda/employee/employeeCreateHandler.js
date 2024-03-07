@@ -91,7 +91,7 @@ const createEmployee = async (event) => {
     };
     const createResult = await client.send(new PutItemCommand(params));
     response.body = JSON.stringify({
-      message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
+      message: httpStatusMessages.SUCCESSFULLY_CREATED_ASSIGNMENT_DETAILS,
       createResult,
     });
   } catch (e) {
@@ -489,15 +489,11 @@ const updatePfDetails = async (event) => {
         }),
       };
 
-      const pfResult = await client.send(new PutItemCommand(params));
-      console.log("Successfully created PF/EPF details.");
-      response = {
-        statusCode: httpStatusCodes.SUCCESS,
-        body: JSON.stringify({
-          message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-          pfResult: unmarshall(pfResult.Attributes),
-        }),
-      };
+      const createResult = await client.send(new PutItemCommand(params));
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        createResult,
+      });
     } else {
       // Update the PF Values with the new values
       console.log("Inside the PF details update function");
