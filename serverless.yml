@@ -115,6 +115,15 @@ functions:
       - http:
           path: pf/{employeeId}
           method: PUT
+  pfEsiCreate:
+    handler: src/Lamda/employee/employeeCreateHandler.createPfDetails
+    name: PfCreate
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: pf/create/{employeeId}
+          method: POST
 resources:
   Resources:
     EmployeeTable:

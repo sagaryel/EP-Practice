@@ -498,6 +498,55 @@ const updatePfDetails = async (event) => {
 
   return response;
 };
+
+const createPfDetails = async (event) => {
+  console.log("inside the create pf details");
+  const response = { 
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  };
+  try {
+    const requestBody = JSON.parse(event.body);
+
+
+    // Fetch the highest highestSerialNumber from the DynamoDB table
+    const highestSerialNumber = await getHighestSerialNumber();
+    console.log("Highest Serial Number:", highestSerialNumber);
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+
+      const params = {
+        TableName: process.env.PF_ESI_TABLE,
+        Item: marshall({
+          pfId: nextSerialNumber,
+          employeeId: employeeId,
+          uanNumber: requestBody.uanNumber,
+          pfNumber: requestBody.pfNumber,
+          pfJoiningDate: requestBody.pfJoiningDate,
+          esiNumber: requestBody.esiNumber,
+          esiJoiningDate: requestBody.esiJoiningDate,
+          esiLeavingDate: requestBody.esiLeavingDate,
+          createdDateTime: createdDate,
+        }),
+      };
+    const createResult = await client.send(new PutItemCommand(params));
+    response.body = JSON.stringify({
+      message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+      createResult,
+    });
+  } catch (e) {
+    console.error(e);
+    response.statusCode = httpStatusCodes.BAD_REQUEST;
+    response.body = JSON.stringify({
+      message: httpStatusMessages.FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS,
+      errorMsg: e.message,
+      errorStack: e.stack,
+    });
+  }
+  return response;
+};
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
@@ -505,4 +554,5 @@ module.exports = {
   getBankDetailsByEmployeeId,
   updateBankDetails,
   updatePfDetails,
+  createPfDetails
 };
