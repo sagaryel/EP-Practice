@@ -500,12 +500,12 @@ const updatePfDetails = async (event) => {
 };
 
 const createPfDetails = async (event) => {
-  console.log("inside the create pf details");
-  const response = { 
+  console.log("Inside the PF details function");
+  const response = {
     statusCode: httpStatusCodes.SUCCESS,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   };
   try {
     const requestBody = JSON.parse(event.body);
@@ -516,6 +516,19 @@ const createPfDetails = async (event) => {
     const nextSerialNumber =
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
+    const params = {
+      TableName: process.env.PF_ESI_TABLE,
+      FilterExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId },
+      },
+    };
+
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
+    console.log("Items:", Items);
+    if (Items.length === 0) {
+      console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
         Item: marshall({
@@ -530,11 +543,51 @@ const createPfDetails = async (event) => {
           createdDateTime: createdDate,
         }),
       };
-    const createResult = await client.send(new PutItemCommand(params));
-    response.body = JSON.stringify({
-      message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-      createResult,
-    });
+      const createResult = await client.send(new PutItemCommand(params));
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        createResult,
+      });
+    } else {
+      console.log("Inside the PF details update function");
+      const pfId = Items[0].pfId.N;
+      const updateParams = {
+        TableName: process.env.PF_ESI_TABLE,
+        Key: {
+          pfId: { N: pfId }, // You need to define pfId here
+        },
+        UpdateExpression: `
+          SET uanNumber = :uan,
+              pfNumber = :pf,
+              pfJoiningDate = :pfJoinDate,
+              #esiNumber = :esi,
+              esiJoiningDate = :esiJoinDate,
+              esiLeavingDate = :esiLeaveDate,
+              updatedDateTime = :updatedDateTime
+        `,
+        ExpressionAttributeValues: marshall({
+          ":uan": requestBody.uanNumber,
+          ":pf": requestBody.pfNumber,
+          ":pfJoinDate": requestBody.pfJoiningDate,
+          ":esi": requestBody.esiNumber,
+          ":esiJoinDate": requestBody.esiJoiningDate,
+          ":esiLeaveDate": requestBody.esiLeavingDate,
+          ":updatedDateTime": createdDate,
+        }),
+        ExpressionAttributeNames: {
+          "#esiNumber": "esi",
+        },
+        ReturnValues: "ALL_NEW",
+      };
+
+      const updateCommand = new UpdateItemCommand(updateParams);
+      const updatedPfDetails = await client.send(updateCommand);
+      console.log("Successfully updated PF/ESI details.");
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
+        updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
+      });
+    }
   } catch (e) {
     console.error(e);
     response.statusCode = httpStatusCodes.BAD_REQUEST;
@@ -553,5 +606,5 @@ module.exports = {
   getBankDetailsByEmployeeId,
   updateBankDetails,
   updatePfDetails,
-  createPfDetails
+  createPfDetails,
 };
