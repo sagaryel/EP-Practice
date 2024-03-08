@@ -449,58 +449,6 @@ const updateBankDetails = async (event) => {
 
 const updatePfDetails = async (event) => {
   console.log("Inside the PF details function");
-  let response;
-
-  try {
-    const requestBody = JSON.parse(event.body);
-    const employeeId = event.pathParameters.employeeId;
-    const highestSerialNumber = await getHighestSerialNumber();
-    console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber =
-      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
-    console.log("next Serial Number:", nextSerialNumber);
-
-    const params = {
-      TableName: process.env.PF_ESI_TABLE,
-      Item: marshall({
-        pfId: nextSerialNumber,
-        employeeId: employeeId,
-        uanNumber: requestBody.uanNumber,
-        pfNumber: requestBody.pfNumber,
-        pfJoiningDate: requestBody.pfJoiningDate,
-        esiNumber: requestBody.esiNumber,
-        esiJoiningDate: requestBody.esiJoiningDate,
-        esiLeavingDate: requestBody.esiLeavingDate,
-        createdDateTime: createdDate,
-      }),
-    };
-
-    const createResult = await client.send(new PutItemCommand(params));
-    console.log("successfully created a pf details:", createResult);
-    response = JSON.stringify({
-      statusCode: httpStatusCodes.SUCCESS,
-      message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-    });
-  } catch (error) {
-    console.error("Error creating or updating PF/ESI details:", error);
-    response = {
-      statusCode: httpStatusCodes.BAD_REQUEST,
-      body: JSON.stringify({
-        message: httpStatusMessages.FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS,
-        errorMsg: error.message,
-        errorStack: error.stack,
-      }),
-    };
-  }
-  response.headers = {
-    "Access-Control-Allow-Origin": "*",
-  };
-
-  return response;
-};
-
-const createPfDetails = async (event) => {
-  console.log("Inside the PF details function");
   const response = {
     statusCode: httpStatusCodes.SUCCESS,
     headers: {
@@ -576,6 +524,111 @@ const createPfDetails = async (event) => {
           ":esi": requestBody.esiNumber,
           ":esiJoinDate": requestBody.esiJoiningDate,
           ":esiLeaveDate": requestBody.esiLeavingDate,
+          ":updatedDateTime": createdDate,
+        }),
+        ExpressionAttributeNames: {
+          "#esi": "esiNumber",
+        },
+        ReturnValues: "ALL_NEW",
+      };
+
+      const updateCommand = new UpdateItemCommand(updateParams);
+      const updatedPfDetails = await client.send(updateCommand);
+      console.log("Successfully updated PF/ESI details.");
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
+        updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    response.statusCode = httpStatusCodes.BAD_REQUEST;
+    response.body = JSON.stringify({
+      message: httpStatusMessages.FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS,
+      errorMsg: e.message,
+      errorStack: e.stack,
+    });
+  }
+  return response;
+};
+
+const createPfDetails = async (event) => {
+  console.log("Inside the PF details function");
+  const response = {
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
+  try {
+    const requestBody = JSON.parse(event.body);
+    const employeeId = event.pathParameters.employeeId;
+    // Fetch the highest highestSerialNumber from the DynamoDB table
+    const highestSerialNumber = await getHighestSerialNumber();
+    console.log("Highest Serial Number:", highestSerialNumber);
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+
+    if (!validatePfDetails(requestBody)) {
+      throw new Error("Required fields are missing.");
+    }
+
+    const params = {
+      TableName: process.env.PF_ESI_TABLE,
+      FilterExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId },
+      },
+    };
+
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
+    console.log("Items:", Items);
+    if (Items.length === 0) {
+      console.log("Inside the PF details create function");
+      const params = {
+        TableName: process.env.PF_ESI_TABLE,
+        Item: marshall({
+          pfId: nextSerialNumber,
+          employeeId: employeeId,
+          uanNumber: requestBody.uanNumber,
+          pfNumber: requestBody.pfNumber,
+          pfJoiningDate: requestBody.pfJoiningDate,
+          esiNumber: requestBody.esiNumber,
+          esiJoiningDate: requestBody.esiJoiningDate,
+          esiLeavingDate: requestBody.esiLeavingDate,
+          createdDateTime: createdDate,
+        }),
+      };
+      const createResult = await client.send(new PutItemCommand(params));
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        createResult,
+      });
+    } else {
+      console.log("Inside the PF details update function");
+      const pfId = Items[0].pfId.N;
+      const updateParams = {
+        TableName: process.env.PF_ESI_TABLE,
+        Key: {
+          pfId: { N: pfId }, // You need to define pfId here
+        },
+        UpdateExpression: `
+          SET uanNumber = :uanNumber,
+              pfNumber = :pfNumber,
+              pfJoiningDate = :pfJoiningDate,
+              #esi = :esiNumber,
+              esiJoiningDate = :esiJoiningDate,
+              esiLeavingDate = :esiLeavingDate,
+              updatedDateTime = :updatedDateTime
+        `,
+        ExpressionAttributeValues: marshall({
+          ":uanNumber": requestBody.uanNumber,
+          ":pfNumber": requestBody.pfNumber,
+          ":pfJoiningDate": requestBody.pfJoiningDate,
+          ":esiNumber": requestBody.esiNumber,
+          ":esiJoiningDate": requestBody.esiJoiningDate,
+          ":esiLeavingDate": requestBody.esiLeavingDate,
           ":updatedDateTime": createdDate,
         }),
         ExpressionAttributeNames: {
