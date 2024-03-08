@@ -564,40 +564,50 @@ const createPfDetails = async (event) => {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
     console.log("employee Id :", employeeId);
-    // Fetch the highest highestSerialNumber from the DynamoDB table
+    
+    // Generate unique pfId
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber =
-      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     if (!validatePfDetails(requestBody)) {
       throw new Error("Required fields are missing.");
     }
-      console.log("Inside the PF details create function");
-      const params = {
-          TableName: process.env.PF_ESI_TABLE,
-          Item: marshall({
-              pfId: nextSerialNumber,
-              employeeId: employeeId,
-              uanNumber: requestBody.uanNumber,
-              pfNumber: requestBody.pfNumber,
-              pfJoiningDate: requestBody.pfJoiningDate,
-              esiNumber: requestBody.esiNumber,
-              esiJoiningDate: requestBody.esiJoiningDate,
-              esiLeavingDate: requestBody.esiLeavingDate,
-              createdDateTime: createdDate,
-          }),
-      };
-      const createResult = await client.send(new PutItemCommand(params));
-      response.body = JSON.stringify({
-          message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-          createResult,
-      });
-    }catch (e) {
+
+    // Check if the employee already has PF details
+    const existingPfDetails = await getPfDetailsByEmployeeId(employeeId);
+    console.log("Existing PF Details:", existingPfDetails);
+
+    if (existingPfDetails) {
+      throw new Error("PF details already exist for this employee.");
+    }
+
+    console.log("Inside the PF details create function");
+    const params = {
+      TableName: process.env.PF_ESI_TABLE,
+      Item: marshall({
+        pfId: nextSerialNumber,
+        employeeId: employeeId,
+        uanNumber: requestBody.uanNumber,
+        pfNumber: requestBody.pfNumber,
+        pfJoiningDate: requestBody.pfJoiningDate,
+        esiNumber: requestBody.esiNumber,
+        esiJoiningDate: requestBody.esiJoiningDate,
+        esiLeavingDate: requestBody.esiLeavingDate,
+        createdDateTime: createdDate,
+      }),
+    };
+
+    const createResult = await client.send(new PutItemCommand(params));
+    response.body = JSON.stringify({
+      message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+      createResult,
+    });
+  } catch (e) {
     console.error(e);
     response.statusCode = httpStatusCodes.BAD_REQUEST;
     response.body = JSON.stringify({
-      message: httpStatusMessages.FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE,
+      message: httpStatusMessages.FAILED_TO_CREATE_PF_DETAILS,
       errorMsg: e.message,
       errorStack: e.stack,
     });
@@ -605,6 +615,28 @@ const createPfDetails = async (event) => {
   return response;
 };
 
+const getPfDetailsByEmployeeId = async (employeeId) => {
+  const params = {
+    TableName: process.env.PF_ESI_TABLE,
+    KeyConditionExpression: "employeeId = :employeeId",
+    ExpressionAttributeValues: {
+      ":employeeId": employeeId
+    }
+  };
+
+  try {
+    const { Items } = await client.query(params);
+    if (Items && Items.length > 0) {
+      // Assuming there is only one PF record per employee
+      return unmarshall(Items[0]);
+    } else {
+      return null; // No PF details found for the employee
+    }
+  } catch (error) {
+    console.error("Error retrieving PF details by employee ID:", error);
+    throw error;
+  }
+};
 
 const getPfOrEsiDetailsByEmployeeId = async (event) => {
   console.log("Inside the get PF ESI details by employee ID function");
