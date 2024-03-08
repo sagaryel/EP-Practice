@@ -16,10 +16,15 @@ const httpStatusMessages = {
     BANK_DETAILS_NOT_FOUND_FOR_EMPLOYEE : ' bank details not found for employee',
     FAILED_TO_UPDATE_BANK_DETAILS : 'failed to update bank details',
     SUCCESSFULLY_UPDATED_BANK_DETAILS : 'successfully updated bank details',
-    SUCCESSFULLY_UPDATED_PF_DETAILS : 'successfully updated pf details',
-    SUCCESSFULLY_CREATED_PF_DETAILS : 'successfully created pf details',
-    FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS : 'failed to update or create pf details'
+    SUCCESSFULLY_UPDATED_PF_DETAILS : 'successfully updated PF/ESI details',
+    SUCCESSFULLY_CREATED_PF_DETAILS : 'successfully created PF/ESI details',
+    FAILED_TO_CREATE_OR_UPDATE_PF_DETAILS : 'failed to create or update PF/ESI details',
+    PF_ESI_NOT_FOUND_FOR_EMPLOYEE : 'PF/ESI not found for employee',
+    SUCCESSFULLY_RETRIEVED_PF_ESI_DETAILS_FOR_EMPLOYEE : 'Successfully retrived PF/ESI details for employee',
+    FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE : 'Failed to retrived PF/ESI details for employee'
 }
+
+
 
 module.exports = {
     httpStatusCodes,

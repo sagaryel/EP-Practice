@@ -124,6 +124,15 @@ functions:
       - http:
           path: pf/create/{employeeId}
           method: POST
+  pfEsiGet:
+    handler: src/Lamda/employee/employeeCreateHandler.getPfOrEsiDetailsByEmployeeId
+    name: PfEsiGet
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: pf/{employeeId}
+          method: GET
 resources:
   Resources:
     EmployeeTable:
