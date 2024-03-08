@@ -564,7 +564,7 @@ const createPfDetails = async (event) => {
           SET uanNumber = :uan,
               pfNumber = :pf,
               pfJoiningDate = :pfJoinDate,
-              #esiNumber = :esi,
+              #esi = :esiNumber,
               esiJoiningDate = :esiJoinDate,
               esiLeavingDate = :esiLeaveDate,
               updatedDateTime = :updatedDateTime
@@ -579,7 +579,7 @@ const createPfDetails = async (event) => {
           ":updatedDateTime": createdDate,
         }),
         ExpressionAttributeNames: {
-          "#esiNumber": "esi",
+          "#esi": "esiNumber",
         },
         ReturnValues: "ALL_NEW",
       };
