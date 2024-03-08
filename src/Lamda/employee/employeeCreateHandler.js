@@ -563,6 +563,7 @@ const createPfDetails = async (event) => {
   try {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
+    console.log("employee Id :", employeeId);
     // Fetch the highest highestSerialNumber from the DynamoDB table
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
@@ -580,7 +581,8 @@ const createPfDetails = async (event) => {
         },
       };
     const result = await client.send(new ScanCommand(params));
-    if (result.Items.length === 0) {
+    console.log("length:", result.Items.length);
+    if (!result.Items.length > 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
