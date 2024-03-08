@@ -580,7 +580,7 @@ const createPfDetails = async (event) => {
         },
       };
     const result = await client.send(new ScanCommand(params));
-    if (result.Items.length > 0) {
+    if (!result.Items.length > 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
