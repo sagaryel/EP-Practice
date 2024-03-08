@@ -573,18 +573,6 @@ const createPfDetails = async (event) => {
     if (!validatePfDetails(requestBody)) {
       throw new Error("Required fields are missing.");
     }
-    const params = {
-      TableName: process.env.BANK_TABLE,
-      FilterExpression: "employeeId = :employeeId",
-      ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
-      },
-    };
-    const command = new ScanCommand(params);
-    const { Items } = await client.send(command);
-    console.log("length:", Items.length);
-    
-    if (!Items || Items.length === 0) {
       console.log("Inside the PF details create function");
       const params = {
           TableName: process.env.PF_ESI_TABLE,
@@ -605,51 +593,11 @@ const createPfDetails = async (event) => {
           message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
           createResult,
       });
-    } else {
-      console.log("Inside the PF details update function");
-      const pfId = Items[0].pfId.N; // Fixed reference to Items
-      const updateParams = {
-        TableName: process.env.PF_ESI_TABLE,
-        Key: {
-          pfId: { N: pfId },
-        },
-        UpdateExpression: `
-          SET uanNumber = :uanNumber,
-              pfNumber = :pfNumber,
-              pfJoiningDate = :pfJoiningDate,
-              #esi = :esiNumber,
-              esiJoiningDate = :esiJoiningDate,
-              esiLeavingDate = :esiLeavingDate,
-              updatedDateTime = :updatedDateTime
-        `,
-        ExpressionAttributeValues: marshall({
-          ":uanNumber": requestBody.uanNumber,
-          ":pfNumber": requestBody.pfNumber,
-          ":pfJoiningDate": requestBody.pfJoiningDate,
-          ":esiNumber": requestBody.esiNumber,
-          ":esiJoiningDate": requestBody.esiJoiningDate,
-          ":esiLeavingDate": requestBody.esiLeavingDate,
-          ":updatedDateTime": createdDate,
-        }),
-        ExpressionAttributeNames: {
-          "#esi": "esiNumber",
-        },
-        ReturnValues: "ALL_NEW",
-      };
-
-      const updateCommand = new UpdateItemCommand(updateParams);
-      const updatedPfDetails = await client.send(updateCommand);
-      console.log("Successfully updated PF ESI details.");
-      response.body = JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
-        updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
-      });
-    }
-  } catch (e) {
+    }catch (e) {
     console.error(e);
     response.statusCode = httpStatusCodes.BAD_REQUEST;
     response.body = JSON.stringify({
-      message: httpStatusMessages.FAILED_TO_UPDATED_OR_CREATE_PF_DETAILS,
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE,
       errorMsg: e.message,
       errorStack: e.stack,
     });
