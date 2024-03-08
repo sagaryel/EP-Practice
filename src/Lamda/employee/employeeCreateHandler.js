@@ -16,7 +16,7 @@ const {
 const {
   validateEmployeeDetails,
   validateBankUpdateDetails,
-  validatePfUpdateDetails,
+  validatePfDetails,
 } = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
 //const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
@@ -515,6 +515,10 @@ const createPfDetails = async (event) => {
     console.log("Highest Serial Number:", highestSerialNumber);
     const nextSerialNumber =
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+
+    if (!validatePfDetails(requestBody)) {
+      throw new Error("Required fields are missing.");
+    }
 
     const params = {
       TableName: process.env.PF_ESI_TABLE,
