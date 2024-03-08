@@ -625,7 +625,8 @@ const getPfDetailsByEmployeeId = async (employeeId) => {
   };
 
   try {
-    const { Items } = await client.query(params);
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
     if (Items && Items.length > 0) {
       // Assuming there is only one PF record per employee
       return unmarshall(Items[0]);
