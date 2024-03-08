@@ -573,14 +573,14 @@ const createPfDetails = async (event) => {
       throw new Error("Required fields are missing.");
     }
       const params = {
-        TableName: process.env.BANK_TABLE,
+        TableName: process.env.PF_ESI_TABLE,
         FilterExpression: "employeeId = :employeeId",
         ExpressionAttributeValues: {
           ":employeeId": { S: employeeId },
         },
       };
     const result = await client.send(new ScanCommand(params));
-    if (!result.Items.length > 0) {
+    if (result.Items.length === 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
@@ -603,7 +603,7 @@ const createPfDetails = async (event) => {
       });
     } else {
       console.log("Inside the PF details update function");
-      const pfId = Items[0].pfId.N;
+      const pfId = result.Items[0].pfId.N;;
       const updateParams = {
         TableName: process.env.PF_ESI_TABLE,
         Key: {
