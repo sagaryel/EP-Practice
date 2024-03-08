@@ -572,19 +572,15 @@ const createPfDetails = async (event) => {
     if (!validatePfDetails(requestBody)) {
       throw new Error("Required fields are missing.");
     }
-
-    const params = {
-      TableName: process.env.PF_ESI_TABLE,
-      FilterExpression: "employeeId = :employeeId",
-      ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId },
-      },
-    };
-
-    const command = new ScanCommand(params);
-    const { Items } = await client.send(command);
-    console.log("Items:", Items);
-    if (Items.length === 0) {
+      const params = {
+        TableName: process.env.BANK_TABLE,
+        FilterExpression: "employeeId = :employeeId",
+        ExpressionAttributeValues: {
+          ":employeeId": { S: employeeId },
+        },
+      };
+    const result = await client.send(new ScanCommand(params));
+    if (result.Items.length > 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
@@ -639,7 +635,7 @@ const createPfDetails = async (event) => {
 
       const updateCommand = new UpdateItemCommand(updateParams);
       const updatedPfDetails = await client.send(updateCommand);
-      console.log("Successfully updated PF/ESI details.");
+      console.log("Successfully updated PF ESI details.");
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
         updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
@@ -659,7 +655,7 @@ const createPfDetails = async (event) => {
 
 
 const getPfOrEsiDetailsByEmployeeId = async (event) => {
-  console.log("Inside the get PF/ESI details by employee ID function");
+  console.log("Inside the get PF ESI details by employee ID function");
   const employeeId = event.pathParameters.employeeId;
 
   const response = {
@@ -680,13 +676,13 @@ const getPfOrEsiDetailsByEmployeeId = async (event) => {
     const { Items } = await client.send(command);
 
     if (!Items || Items.length === 0) {
-      console.log("PF/ESI details not found for employee");
+      console.log("PF ESI details not found for employee");
       response.statusCode = httpStatusCodes.NOT_FOUND;
       response.body = JSON.stringify({
         message: httpStatusMessages.PF_ESI_NOT_FOUND_FOR_EMPLOYEE,
       });
     } else {
-      console.log("Successfully retrived PF/ESI details for employee.");
+      console.log("Successfully retrived PF ESI details for employee.");
       response.body = JSON.stringify({
         message:
           httpStatusMessages.SUCCESSFULLY_RETRIEVED_PF_ESI_DETAILS_FOR_EMPLOYEE,
