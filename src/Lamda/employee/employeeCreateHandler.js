@@ -509,21 +509,21 @@ const updatePfDetails = async (event) => {
           pfId: { N: pfId }, // You need to define pfId here
         },
         UpdateExpression: `
-          SET uanNumber = :uan,
-              pfNumber = :pf,
-              pfJoiningDate = :pfJoinDate,
+          SET uanNumber = :uanNumber,
+              pfNumber = :pfNumber,
+              pfJoiningDate = :pfJoiningDate,
               #esi = :esiNumber,
-              esiJoiningDate = :esiJoinDate,
-              esiLeavingDate = :esiLeaveDate,
+              esiJoiningDate = :esiJoiningDate,
+              esiLeavingDate = :esiLeavingDate,
               updatedDateTime = :updatedDateTime
         `,
         ExpressionAttributeValues: marshall({
-          ":uan": requestBody.uanNumber,
-          ":pf": requestBody.pfNumber,
-          ":pfJoinDate": requestBody.pfJoiningDate,
-          ":esi": requestBody.esiNumber,
-          ":esiJoinDate": requestBody.esiJoiningDate,
-          ":esiLeaveDate": requestBody.esiLeavingDate,
+          ":uanNumber": requestBody.uanNumber,
+          ":pfNumber": requestBody.pfNumber,
+          ":pfJoiningDate": requestBody.pfJoiningDate,
+          ":esiNumber": requestBody.esiNumber,
+          ":esiJoiningDate": requestBody.esiJoiningDate,
+          ":esiLeavingDate": requestBody.esiLeavingDate,
           ":updatedDateTime": createdDate,
         }),
         ExpressionAttributeNames: {
