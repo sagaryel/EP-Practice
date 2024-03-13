@@ -21,7 +21,8 @@ const httpStatusMessages = {
     FAILED_TO_CREATE_OR_UPDATE_PF_DETAILS : 'failed to create or update PF ESI details',
     PF_ESI_NOT_FOUND_FOR_EMPLOYEE : 'PF ESI Details not found for employee',
     SUCCESSFULLY_RETRIEVED_PF_ESI_DETAILS_FOR_EMPLOYEE : 'Successfully retrived PF ESI details for employee',
-    FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE : 'Failed to retrived PF ESI details for employee'
+    FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE : 'Failed to retrived PF ESI details for employee',
+    ALREADY_PF_DETAILS_CREATED_FOR_EMPLOYEE : 'already pf details creted for employee'
 }
 
 

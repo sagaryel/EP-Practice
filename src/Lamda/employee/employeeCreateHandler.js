@@ -472,14 +472,13 @@ const updatePfDetails = async (event) => {
       TableName: process.env.PF_ESI_TABLE,
       FilterExpression: "employeeId = :employeeId",
       ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId },
+        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
       },
     };
-
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
-    console.log("Items:", Items);
-    if (Items.length === 0) {
+    console.log("Existing PF Details:", PfDetails);
+    if (!Items || Items.length === 0) {
       console.log("Inside the PF details create function");
       const params = {
         TableName: process.env.PF_ESI_TABLE,
@@ -574,15 +573,19 @@ const createPfDetails = async (event) => {
       throw new Error("Required fields are missing.");
     }
 
-    // Check if the employee already has PF details
-    const existingPfDetails = await getPfDetailsByEmployeeId(employeeId);
-    console.log("Existing PF Details:", existingPfDetails);
+    // Check if the employee already has PF detail
+    const params = {
+      TableName: process.env.PF_ESI_TABLE,
+      FilterExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
+      },
+    };
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
 
-    if (existingPfDetails) {
-      throw new Error("PF details already exist for this employee.");
-    }
-
-    console.log("Inside the PF details create function");
+    if (!Items || Items.length === 0) {
+      console.log("Inside the PF details create function");
     const params = {
       TableName: process.env.PF_ESI_TABLE,
       Item: marshall({
@@ -603,8 +606,13 @@ const createPfDetails = async (event) => {
 
     response.body = JSON.stringify({
       message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-      createResult: createResult,
+      createResult,
     });
+  } else {
+      response.body = JSON.stringify({
+        message: httpStatusMessages.ALREADY_PF_DETAILS_CREATED_FOR_EMPLOYEE,
+      });
+    }
   } catch (e) {
     console.error(e);
     response.statusCode = httpStatusCodes.BAD_REQUEST;
@@ -615,31 +623,7 @@ const createPfDetails = async (event) => {
     });
   }
   return response;
-};
-
-const getPfDetailsByEmployeeId = async (employeeId) => {
-  const params = {
-    TableName: process.env.PF_ESI_TABLE,
-    KeyConditionExpression: "employeeId = :employeeId",
-    ExpressionAttributeValues: {
-      ":employeeId": employeeId
-    }
-  };
-
-  try {
-    const command = new ScanCommand(params);
-    const { Items } = await client.send(command);
-    if (Items && Items.length > 0) {
-      // Assuming there is only one PF record per employee
-      return unmarshall(Items[0]);
-    } else {
-      return null; // No PF details found for the employee
-    }
-  } catch (error) {
-    console.error("Error retrieving PF details by employee ID:", error);
-    throw error;
-  }
-};
+}
 
 
 const getPfOrEsiDetailsByEmployeeId = async (event) => {
