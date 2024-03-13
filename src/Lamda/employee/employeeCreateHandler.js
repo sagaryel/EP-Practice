@@ -179,7 +179,7 @@ async function getHighestSerialNumber() {
       // Parse and return the highest serial number without incrementing
       const assignmentIdObj = result.Items[0].pfId;
       console.log("Assignment ID from DynamoDB:", assignmentIdObj); // Add this line to see the retrieved assignmentId object
-      const assignmentId = parseInt(assignmentIdObj.N); // Access the N property and parse as a number
+      const pfId = parseInt(assignmentIdObj.N); // Access the N property and parse as a number
       console.log("Parsed pfId ID:", pfId); // Log the parsed assignmentId
       return pfId;
     }
