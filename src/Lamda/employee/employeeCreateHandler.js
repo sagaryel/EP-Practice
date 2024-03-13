@@ -607,7 +607,7 @@ const createPfDetails = async (event) => {
 
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-        createResult,
+        data : params.Item,
       });
     } else {
       console.log("Inside the PF details update function");
