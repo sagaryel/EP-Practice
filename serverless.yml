@@ -122,7 +122,7 @@ functions:
     timeout: 120
     events:
       - http:
-          path: pf/create/{employeeId}
+          path: pf/create
           method: POST
   pfEsiGet:
     handler: src/Lamda/employee/employeeCreateHandler.getPfOrEsiDetailsByEmployeeId

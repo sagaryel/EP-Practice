@@ -561,7 +561,7 @@ const createPfDetails = async (event) => {
   };
   try {
     const requestBody = JSON.parse(event.body);
-    const employeeId = event.pathParameters.employeeId;
+    const employeeId = requestBody.employeeId;
     console.log("employee Id :", employeeId);
 
     // Generate unique pfId
@@ -590,7 +590,7 @@ const createPfDetails = async (event) => {
       TableName: process.env.PF_ESI_TABLE,
       Item: marshall({
         pfId: nextSerialNumber,
-        employeeId: employeeId,
+        employeeId: requestBody.employeeId,
         uanNumber: requestBody.uanNumber,
         pfNumber: requestBody.pfNumber,
         pfJoiningDate: requestBody.pfJoiningDate,
