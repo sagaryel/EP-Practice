@@ -132,29 +132,56 @@ const isEmailExists = async (emailAddress) => {
   return data.Items.length > 0;
 };
 
+// async function getHighestSerialNumber() {
+//   const params = {
+//     TableName: process.env.EMPLOYEE_TABLE,
+//     ProjectionExpression: "serialNumber",
+//     Limit: 100, // Increase the limit to retrieve more items for sorting
+//   };
+
+//   try {
+//     const result = await client.send(new ScanCommand(params));
+
+//     // Sort the items in descending order based on assignmentId
+//     const sortedItems = result.Items.sort((a, b) => {
+//       return parseInt(b.serialNumber.N) - parseInt(a.serialNumber.N);
+//     });
+
+//     console.log("Sorted Items:", sortedItems); // Log the sorted items
+
+//     if (sortedItems.length === 0) {
+//       return 0; // If no records found, return null
+//     } else {
+//       const highestSerialNumber = parseInt(sortedItems[0].serialNumber.N);
+//       console.log("Highest Assignment ID:", highestSerialNumber);
+//       return highestSerialNumber;
+//     }
+//   } catch (error) {
+//     console.error("Error retrieving highest serial number:", error);
+//     throw error; // Propagate the error up the call stack
+//   }
+// }
+
 async function getHighestSerialNumber() {
   const params = {
-    TableName: process.env.EMPLOYEE_TABLE,
-    ProjectionExpression: "serialNumber",
-    Limit: 100, // Increase the limit to retrieve more items for sorting
+    TableName: process.env.PF_ESI_TABLE,
+    ProjectionExpression: "pfId",
+    Limit: 1,
+    ScanIndexForward: false, // Sort in descending order to get the highest serial number first
   };
 
   try {
     const result = await client.send(new ScanCommand(params));
-
-    // Sort the items in descending order based on assignmentId
-    const sortedItems = result.Items.sort((a, b) => {
-      return parseInt(b.serialNumber.N) - parseInt(a.serialNumber.N);
-    });
-
-    console.log("Sorted Items:", sortedItems); // Log the sorted items
-
-    if (sortedItems.length === 0) {
+    console.log("DynamoDB Result:", result); // Add this line to see the DynamoDB response
+    if (result.Items.length === 0) {
       return 0; // If no records found, return null
     } else {
-      const highestSerialNumber = parseInt(sortedItems[0].serialNumber.N);
-      console.log("Highest Assignment ID:", highestSerialNumber);
-      return highestSerialNumber;
+      // Parse and return the highest serial number without incrementing
+      const assignmentIdObj = result.Items[0].pfId;
+      console.log("Assignment ID from DynamoDB:", assignmentIdObj); // Add this line to see the retrieved assignmentId object
+      const assignmentId = parseInt(assignmentIdObj.N); // Access the N property and parse as a number
+      console.log("Parsed pfId ID:", pfId); // Log the parsed assignmentId
+      return pfId;
     }
   } catch (error) {
     console.error("Error retrieving highest serial number:", error);
@@ -567,8 +594,7 @@ const createPfDetails = async (event) => {
     // Generate unique pfId
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber =
-      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     if (!validatePfDetails(requestBody)) {
       throw new Error("Required fields are missing.");
