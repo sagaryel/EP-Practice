@@ -164,23 +164,26 @@ const isEmailExists = async (emailAddress) => {
 
 async function getHighestSerialNumber() {
   const params = {
-    TableName: process.env.PF_ESI_TABLE,
-    ProjectionExpression: "pfId",
-    Limit: 1,
-    ScanIndexForward: false, // Sort in descending order to get the highest serial number first
+    TableName: process.env.ASSIGNMENTS_TABLE,
+    ProjectionExpression: "process.env.PF_ESI_TABLE",
+    Limit: 100, // Increase the limit to retrieve more items for sorting
   };
 
   try {
     const result = await client.send(new ScanCommand(params));
-    console.log("DynamoDB Result:", result); // Add this line to see the DynamoDB response
-    if (result.Items.length === 0) {
+    
+    // Sort the items in descending order based on assignmentId
+    const sortedItems = result.Items.sort((a, b) => {
+      return parseInt(b.pfId.N) - parseInt(a.pfId.N);
+    });
+
+    console.log("Sorted Items:", sortedItems); // Log the sorted items
+
+    if (sortedItems.length === 0) {
       return 0; // If no records found, return null
     } else {
-      // Parse and return the highest serial number without incrementing
-      const assignmentIdObj = result.Items[0].pfId;
-      console.log("Assignment ID from DynamoDB:", assignmentIdObj); // Add this line to see the retrieved assignmentId object
-      const pfId = parseInt(assignmentIdObj.N); // Access the N property and parse as a number
-      console.log("Parsed pfId ID:", pfId); // Log the parsed assignmentId
+      const pfId = parseInt(sortedItems[0].pfId.N);
+      console.log("Highest Assignment ID:", pfId);
       return pfId;
     }
   } catch (error) {
