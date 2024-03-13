@@ -163,34 +163,34 @@ const isEmailExists = async (emailAddress) => {
 // }
 
 async function getHighestSerialNumber() {
-  const params = {
-    TableName: process.env.ASSIGNMENTS_TABLE,
-    ProjectionExpression: "process.env.PF_ESI_TABLE",
-    Limit: 100, // Increase the limit to retrieve more items for sorting
-  };
-
-  try {
-    const result = await client.send(new ScanCommand(params));
-    
-    // Sort the items in descending order based on assignmentId
-    const sortedItems = result.Items.sort((a, b) => {
-      return parseInt(b.pfId.N) - parseInt(a.pfId.N);
-    });
-
-    console.log("Sorted Items:", sortedItems); // Log the sorted items
-
-    if (sortedItems.length === 0) {
-      return 0; // If no records found, return null
-    } else {
-      const pfId = parseInt(sortedItems[0].pfId.N);
-      console.log("Highest Assignment ID:", pfId);
-      return pfId;
-    }
-  } catch (error) {
-    console.error("Error retrieving highest serial number:", error);
-    throw error; // Propagate the error up the call stack
-  }
-}
+        const params = {
+          TableName: process.env.PF_ESI_TABLE,
+          ProjectionExpression: "pfId",
+          Limit: 100, // Increase the limit to retrieve more items for sorting
+        };
+      
+        try {
+          const result = await client.send(new ScanCommand(params));
+          
+          // Sort the items in descending order based on assignmentId
+          const sortedItems = result.Items.sort((a, b) => {
+            return parseInt(b.pfId.N) - parseInt(a.pfId.N);
+          });
+      
+          console.log("Sorted Items:", sortedItems); // Log the sorted items
+      
+          if (sortedItems.length === 0) {
+            return 0; // If no records found, return null
+          } else {
+            const highestPfId = parseInt(sortedItems[0].pfId.N);
+            console.log("Highest Assignment ID:", highestPfId);
+            return highestPfId;
+          }
+        } catch (error) {
+          console.error("Error retrieving highest serial number:", error);
+          throw error; // Propagate the error up the call stack
+        }
+      }
 
 const getAssignmentsByEmployeeId = async (event) => {
   console.log("Fetching assignments details by employee ID");
