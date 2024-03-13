@@ -564,7 +564,7 @@ const createPfDetails = async (event) => {
     const requestBody = JSON.parse(event.body);
     const employeeId = event.pathParameters.employeeId;
     console.log("employee Id :", employeeId);
-    
+
     // Generate unique pfId
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
@@ -599,9 +599,11 @@ const createPfDetails = async (event) => {
     };
 
     const createResult = await client.send(new PutItemCommand(params));
+    console.log("Create result:", createResult);
+
     response.body = JSON.stringify({
       message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-      createResult,
+      createResult: createResult,
     });
   } catch (e) {
     console.error(e);
@@ -638,6 +640,8 @@ const getPfDetailsByEmployeeId = async (employeeId) => {
     throw error;
   }
 };
+
+
 const getPfOrEsiDetailsByEmployeeId = async (event) => {
   console.log("Inside the get PF ESI details by employee ID function");
   const employeeId = event.pathParameters.employeeId;
