@@ -30,7 +30,7 @@ custom:
   assignmentTableName: assignment-Details-${self:provider.stage}
   assetTableName: asset-Details-${self:provider.stage}
   bankTableName: bank-${self:provider.stage}
-  pfTableName: pf-Details
+  pfTableName: pf-esi-Details
 plugins:
   - serverless-iam-roles-per-function
 functions:
