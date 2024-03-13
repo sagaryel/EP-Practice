@@ -567,7 +567,8 @@ const createPfDetails = async (event) => {
     // Generate unique pfId
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     if (!validatePfDetails(requestBody)) {
       throw new Error("Required fields are missing.");
@@ -586,31 +587,66 @@ const createPfDetails = async (event) => {
 
     if (!Items || Items.length === 0) {
       console.log("Inside the PF details create function");
-    const params = {
-      TableName: process.env.PF_ESI_TABLE,
-      Item: marshall({
-        pfId: nextSerialNumber,
-        employeeId: requestBody.employeeId,
-        uanNumber: requestBody.uanNumber,
-        pfNumber: requestBody.pfNumber,
-        pfJoiningDate: requestBody.pfJoiningDate,
-        esiNumber: requestBody.esiNumber,
-        esiJoiningDate: requestBody.esiJoiningDate,
-        esiLeavingDate: requestBody.esiLeavingDate,
-        createdDateTime: createdDate,
-      }),
-    };
+      const params = {
+        TableName: process.env.PF_ESI_TABLE,
+        Item: marshall({
+          pfId: nextSerialNumber,
+          employeeId: requestBody.employeeId,
+          uanNumber: requestBody.uanNumber,
+          pfNumber: requestBody.pfNumber,
+          pfJoiningDate: requestBody.pfJoiningDate,
+          esiNumber: requestBody.esiNumber,
+          esiJoiningDate: requestBody.esiJoiningDate,
+          esiLeavingDate: requestBody.esiLeavingDate,
+          createdDateTime: createdDate,
+        }),
+      };
 
-    const createResult = await client.send(new PutItemCommand(params));
-    console.log("Create result:", createResult);
+      const createResult = await client.send(new PutItemCommand(params));
+      console.log("Create result:", createResult);
 
-    response.body = JSON.stringify({
-      message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-      createResult,
-    });
-  } else {
       response.body = JSON.stringify({
-        message: httpStatusMessages.ALREADY_PF_DETAILS_CREATED_FOR_EMPLOYEE,
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
+        createResult,
+      });
+    } else {
+      console.log("Inside the PF details update function");
+      const pfId = Items[0].pfId.N;
+      const updateParams = {
+        TableName: process.env.PF_ESI_TABLE,
+        Key: {
+          pfId: { N: pfId }, // You need to define pfId here
+        },
+        UpdateExpression: `
+        SET uanNumber = :uanNumber,
+            pfNumber = :pfNumber,
+            pfJoiningDate = :pfJoiningDate,
+            #esi = :esiNumber,
+            esiJoiningDate = :esiJoiningDate,
+            esiLeavingDate = :esiLeavingDate,
+            updatedDateTime = :updatedDateTime
+      `,
+        ExpressionAttributeValues: marshall({
+          ":uanNumber": requestBody.uanNumber,
+          ":pfNumber": requestBody.pfNumber,
+          ":pfJoiningDate": requestBody.pfJoiningDate,
+          ":esiNumber": requestBody.esiNumber,
+          ":esiJoiningDate": requestBody.esiJoiningDate,
+          ":esiLeavingDate": requestBody.esiLeavingDate,
+          ":updatedDateTime": createdDate,
+        }),
+        ExpressionAttributeNames: {
+          "#esi": "esiNumber",
+        },
+        ReturnValues: "ALL_NEW",
+      };
+
+      const updateCommand = new UpdateItemCommand(updateParams);
+      const updatedPfDetails = await client.send(updateCommand);
+      console.log("Successfully updated PF/ESI details.");
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_UPDATED_PF_DETAILS,
+        updatedPfDetails: unmarshall(updatedPfDetails.Attributes),
       });
     }
   } catch (e) {
@@ -623,8 +659,7 @@ const createPfDetails = async (event) => {
     });
   }
   return response;
-}
-
+};
 
 const getPfOrEsiDetailsByEmployeeId = async (event) => {
   console.log("Inside the get PF ESI details by employee ID function");
@@ -665,7 +700,8 @@ const getPfOrEsiDetailsByEmployeeId = async (event) => {
     console.error(error);
     response.statusCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
     response.body = JSON.stringify({
-      message: httpStatusMessages.FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE,
+      message:
+        httpStatusMessages.FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE,
       error: error.message,
     });
   }
@@ -679,5 +715,5 @@ module.exports = {
   updateBankDetails,
   updatePfDetails,
   createPfDetails,
-  getPfOrEsiDetailsByEmployeeId
+  getPfOrEsiDetailsByEmployeeId,
 };
