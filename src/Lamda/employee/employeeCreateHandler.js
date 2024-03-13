@@ -638,7 +638,6 @@ const getPfDetailsByEmployeeId = async (employeeId) => {
     throw error;
   }
 };
-
 const getPfOrEsiDetailsByEmployeeId = async (event) => {
   console.log("Inside the get PF ESI details by employee ID function");
   const employeeId = event.pathParameters.employeeId;
