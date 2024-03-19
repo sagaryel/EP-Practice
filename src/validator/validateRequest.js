@@ -112,15 +112,15 @@ const validatePfDetails = (requestBody) => {
     throw new Error("Invalid ESI Number, please add a 13 digit ESI Number");
   } else if (!isValidDateFormat(pfJoiningDate)) {
     throw new Error(
-      "Invalid pfJoiningDate, please add a date formate for pfJoiningDate"
+      "pfJoiningDate is not in a valid date format, please add a MM/DD/YYYY"
     );
   } else if (!isValidDateFormat(esiJoiningDate)) {
     throw new Error(
-      "Invalid esiJoiningDate, please add a date formate for esiJoiningDate"
+      "esiJoiningDate is not in a valid date format, please add a MM/DD/YYYY"
     );
   } else if (!isValidDateFormat(esiLeavingDate)) {
     throw new Error(
-      "pfJoiningDate is not in a valid date format."
+      "esiLeavingDate is not in a valid date format, please add a MM/DD/YYYY"
     );
   }
   return true;
