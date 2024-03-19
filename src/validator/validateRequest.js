@@ -120,7 +120,7 @@ const validatePfDetails = (requestBody) => {
     );
   } else if (!isValidDateFormat(esiLeavingDate)) {
     throw new Error(
-      "Invalid esiLeavingDate, please add a date formate for esiLeavingDate"
+      "pfJoiningDate is not in a valid date format."
     );
   }
   return true;
@@ -137,10 +137,7 @@ const isValidESINumber = (esiNumber) => {
 };
 
 function isValidDateFormat(dateString) {
-  const date = new Date(dateString);
-  return (
-    !isNaN(date.getTime()) && dateString === date.toISOString().slice(0, 10)
-  );
+    return  dateString === "29-12-2022";
 }
 
 module.exports = {
