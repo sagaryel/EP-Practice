@@ -507,7 +507,6 @@ const updatePfDetails = async (event) => {
     };
     const command = new ScanCommand(params);
     const { Items } = await client.send(command);
-    console.log("Existing PF Details:", PfDetails);
     if (!Items || Items.length === 0) {
       console.log("Inside the PF details create function");
       const params = {
