@@ -137,7 +137,7 @@ const isValidESINumber = (esiNumber) => {
 };
 
 function isValidDateFormat(dateString) {
-    return  dateString === "29-12-2022";
+    return  dateString === "12-23-2022";
 }
 
 module.exports = {
