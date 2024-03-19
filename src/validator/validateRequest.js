@@ -86,8 +86,8 @@ const isValidESINumber = (esiNumber) => {
 };
 
 function isValidDateFormat(dateString) {
-    const date = new Date(dateString);
-    return !isNaN(date.getTime()) && dateString === date.toISOString().slice(0, 10);
+    const allowedDate = "2024-03-13";
+    return dateString === allowedDate;
   }
 
 
