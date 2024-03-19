@@ -65,7 +65,13 @@ const validatePfDetails = (requestBody) => {
         throw new Error('Invalid PF Number, please add a 22 digit PF Number');
     }else if (!isValidESINumber(esiNumber)) {
       throw new Error('Invalid ESI Number, please add a 13 digit ESI Number');
-    }
+    }else if(isValidDateFormat(pfJoiningDate)){
+        throw new Error('Invalid pfJoiningDate, please add a date formate for pfJoiningDate');
+    }else if(isValidDateFormat(esiJoiningDate)){
+        throw new Error('Invalid esiJoiningDate, please add a date formate for esiJoiningDate');
+    }else if(isValidDateFormat(esiLeavingDate)){
+        throw new Error('Invalid esiLeavingDate, please add a date formate for esiLeavingDate');
+}
     return true;
   };
 
@@ -78,6 +84,11 @@ const isValidPFNumber = (pfNumber) => {
 const isValidESINumber = (esiNumber) => {
     return /^\d{13}$/.test(esiNumber);
 };
+
+function isValidDateFormat(dateString) {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime()) && dateString === date.toISOString().slice(0, 10);
+  }
 
 
 module.exports = {
