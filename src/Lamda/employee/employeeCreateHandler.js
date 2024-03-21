@@ -780,7 +780,7 @@ const getAllEmployees = async (event) => {
 
 const paginate = (allItems, pageNo, pageSize) => {
   console.log("inside the pagination function");
-  console.log("items length", allItems);
+  console.log("items length", allItems.length);
   // Calculate start and end indexes for pagination
   const startIndex = (pageNo - 1) * pageSize;
   console.log("start index", startIndex);
