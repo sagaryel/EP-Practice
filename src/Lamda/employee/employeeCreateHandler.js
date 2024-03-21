@@ -751,9 +751,12 @@ const getAllEmployees = async (event) => {
       TableName: process.env.EMPLOYEE_TABLE,
     };
     const { Items } = await client.send(new ScanCommand(params));
-    Items.sort((a, b) => new Date(b.createdDateTime) - new Date(a.createdDateTime));
-    console.log({ Items });
-    if (!Items || Items.length === 0) {
+    
+    // Paginate the items
+    const paginatedData = paginate(Items, pageNo, pageSize);
+
+    console.log({ paginatedData });
+    if (!paginatedData.items || paginatedData.items.length === 0) {
       console.log("No employees found.");
       response.statusCode = httpStatusCodes.NOT_FOUND;
       response.body = JSON.stringify({
@@ -762,9 +765,12 @@ const getAllEmployees = async (event) => {
     } else {
       console.log("Successfully retrieved all employees.");
       
+      // Sort the paginated items by "createdDateTime" in descending order
+      paginatedData.items.sort((a, b) => new Date(b.createdDateTime) - new Date(a.createdDateTime));
+      
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
-        data: paginate(Items.map(item => unmarshall(item)), pageNo, pageSize),
+        data: unmarshall(paginatedData),
       });
     }
   } catch (e) {
