@@ -763,7 +763,7 @@ const getAllEmployees = async (event) => {
       
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
-        data: paginate(Items, pageNo, pageSize),
+        data: paginate(Items.map(item => unmarshall(item)), pageNo, pageSize),
       });
     }
   } catch (e) {
