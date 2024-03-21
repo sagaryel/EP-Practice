@@ -751,7 +751,7 @@ const getAllEmployees = async (event) => {
       TableName: process.env.EMPLOYEE_TABLE,
     };
     const { Items } = await client.send(new ScanCommand(params));
-    Items.sort((a, b) => parseInt(a.employeeId.S) - parseInt(b.employeeId.S));
+    allItems.sort((a, b) => new Date(a.createdDateTime) - new Date(b.createdDateTime));
     console.log({ Items });
     if (!Items || Items.length === 0) {
       console.log("No employees found.");
