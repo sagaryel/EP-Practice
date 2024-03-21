@@ -780,13 +780,15 @@ const getAllEmployees = async (event) => {
 
 const paginate = (allItems, pageNo, pageSize) => {
   console.log("inside the pagination function");
+  console.log("items length", allItems);
   // Calculate start and end indexes for pagination
   const startIndex = (pageNo - 1) * pageSize;
+  console.log("start index", startIndex);
   const endIndex = pageNo * pageSize;
-  
+  console.log("endIndex index", endIndex);
   // Slice the array to get the current page of data
   const items = allItems.slice(startIndex, endIndex);
-  
+  console.log("items", items);
   // Return paginated data along with metadata
   return {
       items,
