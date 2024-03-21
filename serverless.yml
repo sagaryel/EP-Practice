@@ -133,6 +133,21 @@ functions:
       - http:
           path: pf/{employeeId}
           method: GET
+  employeeGetAll:
+    handler: src/Lamda/employee/employeeCreateHandler.getAllEmployees
+    name: employeeGetAll
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: employees
+          method: GET
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                pageNo : true
+                pageSize : true
 resources:
   Resources:
     EmployeeTable:

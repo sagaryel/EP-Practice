@@ -689,7 +689,7 @@ const createPfDetails = async (event) => {
   return response;
 };
 
-const getPfOrEsiDetailsByEmployeeId = async (event) => {
+const getPfEsiDetailsByEmployeeId = async (event) => {
   console.log("Inside the get PF ESI details by employee ID function");
   const employeeId = event.pathParameters.employeeId;
 
@@ -704,7 +704,7 @@ const getPfOrEsiDetailsByEmployeeId = async (event) => {
       TableName: process.env.PF_ESI_TABLE,
       FilterExpression: "employeeId = :employeeId",
       ExpressionAttributeValues: {
-        ":employeeId": { S: employeeId }, // Assuming employeeId is a string, adjust accordingly if not
+        ":employeeId": { S: employeeId },
       },
     };
     const command = new ScanCommand(params);
@@ -721,7 +721,7 @@ const getPfOrEsiDetailsByEmployeeId = async (event) => {
       response.body = JSON.stringify({
         message:
           httpStatusMessages.SUCCESSFULLY_RETRIEVED_PF_ESI_DETAILS_FOR_EMPLOYEE,
-        data: Items.map((item) => unmarshall(item)), // Unmarshalling each item
+        data: Items.map((item) => unmarshall(item)),
       });
     }
   } catch (error) {
@@ -735,6 +735,67 @@ const getPfOrEsiDetailsByEmployeeId = async (event) => {
   }
   return response;
 };
+
+
+const getAllEmployees = async (event) => {
+  console.log("Get all employees");
+  const response = {
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  };
+  const { pageNo = 1, pageSize = 10 } = event.queryStringParameters;
+  try {
+    const params = {
+      TableName: process.env.EMPLOYEE_TABLE,
+    };
+    const { Items } = await client.send(new ScanCommand(params));
+    console.log({ Items });
+    if (!Items || Items.length === 0) {
+      console.log("No employees found.");
+      response.statusCode = httpStatusCodes.NOT_FOUND;
+      response.body = JSON.stringify({
+        message: httpStatusMessages.NO_EMPLOYEES_FOUND,
+      });
+    } else {
+      console.log("Successfully retrieved all employees.");
+      
+      return paginate(Items, parseInt(pageNo),parseInt(pageSize));
+    //   response.body = JSON.stringify({
+    //     message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
+    //     data: Items.map(item => unmarshall(item)),
+    //   });
+    }
+  } catch (e) {
+    console.error(e);
+    response.body = JSON.stringify({
+      statusCode: e.statusCode,
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_EMPLOYEES,
+      errorMsg: e.message,
+    });
+  }
+  return response;
+};
+
+const paginate = (allItems, pageNo, pageSize) => {
+  // Calculate start and end indexes for pagination
+  const startIndex = (pageNo - 1) * pageSize;
+  const endIndex = pageNo * pageSize;
+  
+  // Slice the array to get the current page of data
+  const items = allItems.slice(startIndex, endIndex);
+  
+  // Return paginated data along with metadata
+  return {
+      items,
+      totalItems: allItems.length,
+      currentPage: pageNo,
+      totalPages: Math.ceil(allItems.length / pageSize)
+  };
+};
+
+
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
@@ -743,5 +804,6 @@ module.exports = {
   updateBankDetails,
   updatePfDetails,
   createPfDetails,
-  getPfOrEsiDetailsByEmployeeId,
+  getPfEsiDetailsByEmployeeId,
+  getAllEmployees
 };
