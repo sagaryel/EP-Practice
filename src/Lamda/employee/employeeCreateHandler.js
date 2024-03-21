@@ -761,11 +761,10 @@ const getAllEmployees = async (event) => {
     } else {
       console.log("Successfully retrieved all employees.");
       
-      return paginate(Items, pageNo, pageSize);
-    //   response.body = JSON.stringify({
-    //     message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
-    //     data: Items.map(item => unmarshall(item)),
-    //   });
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
+        data: paginate(Items, pageNo, pageSize),
+      });
     }
   } catch (e) {
     console.error(e);
