@@ -761,7 +761,7 @@ const getAllEmployees = async (event) => {
     } else {
       console.log("Successfully retrieved all employees.");
       
-      return paginate(Items, parseInt(pageNo),parseInt(pageSize));
+      return paginate(Items, pageNo, pageSize);
     //   response.body = JSON.stringify({
     //     message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
     //     data: Items.map(item => unmarshall(item)),
@@ -779,6 +779,7 @@ const getAllEmployees = async (event) => {
 };
 
 const paginate = (allItems, pageNo, pageSize) => {
+  console.log("inside the pagination function");
   // Calculate start and end indexes for pagination
   const startIndex = (pageNo - 1) * pageSize;
   const endIndex = pageNo * pageSize;
