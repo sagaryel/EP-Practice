@@ -761,10 +761,17 @@ const getAllEmployees = async (event) => {
       });
     } else {
       console.log("Successfully retrieved all employees.");
+      const employeesData = Items.map((item) => {
+        const employee = unmarshall(item);
+        if (employee.hasOwnProperty("password")) {
+          employee.password = null;
+        }
+        return employee;
+      });
       
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
-        data: paginate(Items.map(item => unmarshall(item)), pageNo, pageSize),
+        data: paginate(employeesData.map(item => unmarshall(item)), pageNo, pageSize),
       });
     }
   } catch (e) {
