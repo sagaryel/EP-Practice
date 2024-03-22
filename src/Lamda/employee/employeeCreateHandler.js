@@ -745,13 +745,13 @@ const getAllEmployees = async (event) => {
       'Access-Control-Allow-Origin': '*',
     }
   };
-  const { pageNo = 1, pageSize = 10 } = event.queryStringParameters;
+  const { pageNo, pageSize } = event.queryStringParameters;
   try {
     const params = {
       TableName: process.env.EMPLOYEE_TABLE,
     };
     const { Items } = await client.send(new ScanCommand(params));
-    Items.sort((a, b) => new Date(a.createdDateTime) - new Date(b.createdDateTime));
+    Items.sort((a, b) => parseInt(a.employeeId.S) - parseInt(b.employeeId.S));
     console.log({ Items });
     if (!Items || Items.length === 0) {
       console.log("No employees found.");
