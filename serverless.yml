@@ -148,6 +148,21 @@ functions:
               querystrings:
                 pageNo : true
                 pageSize : true
+  assetGetAll:
+    handler: src/Lamda/employee/employeeCreateHandler.getAllEmployeesAsset
+    name: assetGetAll
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: assets
+          method: GET
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                pageNo : true
+                pageSize : true
 resources:
   Resources:
     EmployeeTable:

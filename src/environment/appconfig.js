@@ -24,7 +24,10 @@ const httpStatusMessages = {
     FAILED_TO_RETRIEVE_PF_ESI_DETAILS_FOR_EMPLOYEE : 'Failed to retrived PF ESI details for employee',
     ALREADY_PF_DETAILS_CREATED_FOR_EMPLOYEE : 'already pf details creted for employee',
     FAILED_TO_RETRIEVE_EMPLOYEES :'failed to retrive the employees',
-    NO_EMPLOYEES_FOUND : 'no employees found'
+    NO_EMPLOYEES_FOUND : 'no employees found',
+    SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION : 'Successfully retrived asset information',
+    FAILED_TO_RETRIEVE_ASSET_INFORMATION : 'Failed to retrive asset information',
+    ASSET_INFORMATION_NOT_FOUND : 'asset information not found'
 }
 
 

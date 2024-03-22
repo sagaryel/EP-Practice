@@ -761,17 +761,10 @@ const getAllEmployees = async (event) => {
       });
     } else {
       console.log("Successfully retrieved all employees.");
-      const employeesData = Items.map((item) => {
-        const employee = unmarshall(item);
-        if (employee.hasOwnProperty("password")) {
-          employee.password = null;
-        }
-        return employee;
-      });
       
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
-        data: paginate(employeesData.map(item => unmarshall(item)), pageNo, pageSize),
+        data: paginate(Items.map(item => unmarshall(item)), pageNo, pageSize),
       });
     }
   } catch (e) {
@@ -805,6 +798,47 @@ const paginate = (allItems, pageNo, pageSize) => {
   };
 };
 
+const getAllEmployeesAsset = async (event) => {
+  console.log("Get all employees");
+  const response = {
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  };
+  const { pageNo, pageSize } = event.queryStringParameters;
+  try {
+    const params = {
+      TableName : process.env.ASSETS_TABLE ,
+    };
+    const { Items } = await client.send(new ScanCommand(params));
+    Items.sort((a, b) => parseInt(a.assetId.N) - parseInt(b.assetId.N));
+    console.log({ Items });
+    if (!Items || Items.length === 0) {
+      console.log("No assets details not found for employees");
+      response.statusCode = httpStatusCodes.NOT_FOUND;
+      response.body = JSON.stringify({
+        message: httpStatusMessages.ASSET_INFORMATION_NOT_FOUND,
+      });
+    } else {
+      console.log("Successfully retrieved asset details of all employees.");
+      
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
+        data: paginate(Items.map(item => unmarshall(item)), pageNo, pageSize),
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    response.body = JSON.stringify({
+      statusCode: e.statusCode,
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_ASSET_INFORMATION,
+      errorMsg: e.message,
+    });
+  }
+  return response;
+};
+
 
 module.exports = {
   createEmployee,
@@ -815,5 +849,6 @@ module.exports = {
   updatePfDetails,
   createPfDetails,
   getPfEsiDetailsByEmployeeId,
-  getAllEmployees
+  getAllEmployees,
+  getAllEmployeesAsset
 };
