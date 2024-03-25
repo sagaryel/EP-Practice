@@ -823,8 +823,7 @@ const getAllEmployeesAsset = async (event) => {
     } else {
       console.log("Successfully retrieved asset details of all employees.");
       const sanitizedItems = Items.map(item => {
-        const sanitizedItem = { ...item };
-        delete sanitizedItem.password; // Assuming password field is called 'password'
+        const { password, ...sanitizedItem } = item;
         return sanitizedItem;
       });
       response.body = JSON.stringify({
