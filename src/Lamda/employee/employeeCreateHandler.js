@@ -822,12 +822,10 @@ const getAllEmployeesAsset = async (event) => {
       });
     } else {
       console.log("Successfully retrieved asset details of all employees.");
-      const employeesData = Items.map((item) => {
-        const employee = unmarshall(item);
-        if (employee.hasOwnProperty("password")) {
-          employee.password = null;
-        }
-        return employee;
+      const sanitizedItems = Items.map(item => {
+        const sanitizedItem = { ...item };
+        delete sanitizedItem.password; // Assuming password field is called 'password'
+        return sanitizedItem;
       });
       response.body = JSON.stringify({
         message: employeesData.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
