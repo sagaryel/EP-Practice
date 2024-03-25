@@ -822,6 +822,51 @@ const getAllEmployeesAsset = async (event) => {
       });
     } else {
       console.log("Successfully retrieved asset details of all employees.");
+      const sanitizedItems = Items.map(item => {
+        const sanitizedItem = { ...item };
+        delete sanitizedItem.password; // Assuming password field is called 'password'
+        return sanitizedItem;
+      });
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
+        data: paginate(sanitizedItems.map(item => unmarshall(item)), pageNo, pageSize),
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    response.body = JSON.stringify({
+      statusCode: e.statusCode,
+      message: httpStatusMessages.FAILED_TO_RETRIEVE_ASSET_INFORMATION,
+      errorMsg: e.message,
+    });
+  }
+  return response;
+};
+
+const getAllEmployeesMetadata = async (event) => {
+  console.log("Get all employees metadata");
+  const response = {
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  };
+  const { pageNo, pageSize } = event.queryStringParameters;
+  try {
+    const params = {
+      TableName : process.env.METADATA_TABLE,
+    };
+    const { Items } = await client.send(new ScanCommand(params));
+    Items.sort((a, b) => parseInt(a.metadataId.N) - parseInt(b.metadataId.N));
+    console.log({ Items });
+    if (!Items || Items.length === 0) {
+      console.log("metadata details not found for employees");
+      response.statusCode = httpStatusCodes.NOT_FOUND;
+      response.body = JSON.stringify({
+        message: httpStatusMessages.ASSET_INFORMATION_NOT_FOUND,
+      });
+    } else {
+      console.log("Successfully retrieved asset details of all employees.");
       
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
@@ -838,8 +883,6 @@ const getAllEmployeesAsset = async (event) => {
   }
   return response;
 };
-
-
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
@@ -850,5 +893,6 @@ module.exports = {
   createPfDetails,
   getPfEsiDetailsByEmployeeId,
   getAllEmployees,
-  getAllEmployeesAsset
+  getAllEmployeesAsset,
+  getAllEmployeesMetadata
 };
