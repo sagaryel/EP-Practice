@@ -822,13 +822,15 @@ const getAllEmployeesAsset = async (event) => {
       });
     } else {
       console.log("Successfully retrieved asset details of all employees.");
-      const sanitizedItems = Items.map(item => {
-        const sanitizedItem = { ...item };
-        delete sanitizedItem.password; // Assuming password field is called 'password'
-        return sanitizedItem;
+      const employeesData = Items.map((item) => {
+        const employee = unmarshall(item);
+        if (employee.hasOwnProperty("password")) {
+          employee.password = null;
+        }
+        return employee;
       });
       response.body = JSON.stringify({
-        message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
+        message: employeesData.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
         data: paginate(sanitizedItems.map(item => unmarshall(item)), pageNo, pageSize),
       });
     }
