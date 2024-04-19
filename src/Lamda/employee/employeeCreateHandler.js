@@ -918,6 +918,7 @@ const documentUpload = async (event) => {
     if (!event || !event.body) {
       throw new Error("Invalid HTTP request");
     }
+    console.log("Ensure event is an HTTP request done");
     // Parse form data from event
     const form = new formidable.IncomingForm();
     const formData = await new Promise((resolve, reject) => {
@@ -926,7 +927,7 @@ const documentUpload = async (event) => {
         resolve({ fields, files });
       });
     });
-
+    console.log("Extract document info from fields");
     // Extract document info from fields
     const documentInfo = JSON.parse(formData.fields.documentInfo);
 
