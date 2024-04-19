@@ -13,6 +13,7 @@ const AWS = require("aws-sdk");
 const client = new DynamoDBClient();
 const formidable = require("formidable");
 const fs = require("fs");
+const { parse } = require('multipart-parser');
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -919,25 +920,12 @@ const documentUpload = async (event) => {
       throw new Error("Invalid HTTP request");
     }
     console.log("Ensure event is an HTTP request done");
-    // Parse multipart/form-data payload
-    const contentType = event.headers['content-type'];
-    // if (!contentType.startsWith('multipart/form-data')) {
-    //   throw new Error('Invalid content type. Expecting multipart/form-data.');
-    // }
+   
+    const parts = parse(event.body, event.headers['content-type']);
 
-    console.log("Event body:", event.body);
-    // Extract document info from the body
-    let body = event.body;
-    if (typeof body === 'string') {
-      body = JSON.parse(body);
-    }
-    const documentInfo = {
-      documentType: body.documentType || "",
-      documentName: body.documentName || "",
-      updateDate: body.updateDate || moment().format(),
-      employeeId: parseInt(body.employeeId) || 0,
-    };
-
+    // Extract document info and file
+    const documentInfo = JSON.parse(parts.find(part => part.name === 'documentInfo').data.toString());
+    const file = parts.find(part => part.filename);
     console.log("checking the required feilds");
     // Check for required fields
     if (!documentInfo.documentType || !documentInfo.documentName || !documentInfo.employeeId) {
@@ -945,7 +933,6 @@ const documentUpload = async (event) => {
     }
 
     // Validate file
-    const file = event.isBase64Encoded ? Buffer.from(body.files, 'base64') : Buffer.from(body.files, 'binary');
     if (!file) {
       throw new Error("File is missing.");
     }
@@ -962,9 +949,8 @@ const documentUpload = async (event) => {
     // Upload file to S3 bucket and generate pre-signed URL
     const params = {
       Bucket: 'uat-employeedocumentupload',
-      Key: `${Date.now()}_${body.filename}`,
-      Body: file,
-      ContentType: contentType,
+      Key: `${Date.now()}_${documentInfo.documentName}`,
+      Body: file.data,
       ACL: 'public-read', // Set ACL as per your requirement
     };
     const uploadResult = await s3.upload(params).promise();
