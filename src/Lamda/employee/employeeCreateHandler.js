@@ -914,14 +914,13 @@ const documentUpload = async (event) => {
   };
   try {
     console.log("Inside the try block document upload");
-    // Parse form data
     // Ensure event is an HTTP request
-    if (!event || !event.headers || !event.body) {
+    if (!event || !event.body) {
       throw new Error("Invalid HTTP request");
     }
-    const body = JSON.parse(event.body);
+    // Parse form data from event
     const form = new formidable.IncomingForm();
-    const { fields, files } = await new Promise((resolve, reject) => {
+    const formData = await new Promise((resolve, reject) => {
       form.parse(event, (err, fields, files) => {
         if (err) reject(err);
         resolve({ fields, files });
@@ -929,23 +928,19 @@ const documentUpload = async (event) => {
     });
 
     // Extract document info from fields
-    const documentInfo = {
-      documentType: body.documentType || "",
-      documentName: body.documentName || "",
-      updateDate: body.updateDate || moment().format(), // assuming updateDate is in ISO format or can be formatted as needed
-      employeeId: parseInt(body.employeeId) || 0,
-    };
+    const documentInfo = JSON.parse(formData.fields.documentInfo);
 
     // Check for required fields
-    if (
-      !documentInfo.documentType ||
-      !documentInfo.documentName ||
-      !documentInfo.employeeId ||
-      !files
-    ) {
+    console.log("checking the required feilds");
+    if (!documentInfo.documentType || !documentInfo.documentName || !documentInfo.employeeId) {
       throw new Error("Required fields are missing.");
     }
 
+    // Validate file
+    const file = formData.files.files;
+    if (!file) {
+      throw new Error("File is missing.");
+    }
     // Validate file types and size
     console.log("checking the extensions os files");
     const allowedFileTypes = ["image/png", "image/jpeg", "application/pdf"];
