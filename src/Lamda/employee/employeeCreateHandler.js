@@ -921,9 +921,9 @@ const documentUpload = async (event) => {
     console.log("Ensure event is an HTTP request done");
     // Parse multipart/form-data payload
     const contentType = event.headers['content-type'];
-    if (!contentType.startsWith('multipart/form-data')) {
-      throw new Error('Invalid content type. Expecting multipart/form-data.');
-    }
+    // if (!contentType.startsWith('multipart/form-data')) {
+    //   throw new Error('Invalid content type. Expecting multipart/form-data.');
+    // }
 
     // Extract document info from the body
     const body = JSON.parse(event.body);
