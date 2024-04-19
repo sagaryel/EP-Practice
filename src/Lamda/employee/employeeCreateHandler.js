@@ -9,10 +9,10 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const moment = require("moment");
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 const client = new DynamoDBClient();
-const formidable = require('formidable');
-const fs = require('fs');
+const formidable = require("formidable");
+const fs = require("fs");
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -168,34 +168,34 @@ const isEmailExists = async (emailAddress) => {
 // }
 
 async function getHighestSerialNumber() {
-        const params = {
-          TableName: process.env.PF_ESI_TABLE,
-          ProjectionExpression: "pfId",
-          Limit: 100, // Increase the limit to retrieve more items for sorting
-        };
-      
-        try {
-          const result = await client.send(new ScanCommand(params));
-          
-          // Sort the items in descending order based on assignmentId
-          const sortedItems = result.Items.sort((a, b) => {
-            return parseInt(b.pfId.N) - parseInt(a.pfId.N);
-          });
-      
-          console.log("Sorted Items:", sortedItems); // Log the sorted items
-      
-          if (sortedItems.length === 0) {
-            return 0; // If no records found, return null
-          } else {
-            const highestPfId = parseInt(sortedItems[0].pfId.N);
-            console.log("Highest Assignment ID:", highestPfId);
-            return highestPfId;
-          }
-        } catch (error) {
-          console.error("Error retrieving highest serial number:", error);
-          throw error; // Propagate the error up the call stack
-        }
-      }
+  const params = {
+    TableName: process.env.PF_ESI_TABLE,
+    ProjectionExpression: "pfId",
+    Limit: 100, // Increase the limit to retrieve more items for sorting
+  };
+
+  try {
+    const result = await client.send(new ScanCommand(params));
+
+    // Sort the items in descending order based on assignmentId
+    const sortedItems = result.Items.sort((a, b) => {
+      return parseInt(b.pfId.N) - parseInt(a.pfId.N);
+    });
+
+    console.log("Sorted Items:", sortedItems); // Log the sorted items
+
+    if (sortedItems.length === 0) {
+      return 0; // If no records found, return null
+    } else {
+      const highestPfId = parseInt(sortedItems[0].pfId.N);
+      console.log("Highest Assignment ID:", highestPfId);
+      return highestPfId;
+    }
+  } catch (error) {
+    console.error("Error retrieving highest serial number:", error);
+    throw error; // Propagate the error up the call stack
+  }
+}
 
 const getAssignmentsByEmployeeId = async (event) => {
   console.log("Fetching assignments details by employee ID");
@@ -601,7 +601,8 @@ const createPfDetails = async (event) => {
     // Generate unique pfId
     const highestSerialNumber = await getHighestSerialNumber();
     console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber = highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     if (!validatePfDetails(requestBody)) {
       throw new Error("Required fields are missing.");
@@ -640,7 +641,7 @@ const createPfDetails = async (event) => {
 
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_CREATED_PF_DETAILS,
-        data : unmarshall(params.Item),
+        data: unmarshall(params.Item),
       });
     } else {
       console.log("Inside the PF details update function");
@@ -741,14 +742,13 @@ const getPfEsiDetailsByEmployeeId = async (event) => {
   return response;
 };
 
-
 const getAllEmployees = async (event) => {
   console.log("Get all employees");
   const response = {
     statusCode: httpStatusCodes.SUCCESS,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   };
   const { pageNo, pageSize } = event.queryStringParameters;
   try {
@@ -766,14 +766,18 @@ const getAllEmployees = async (event) => {
       });
     } else {
       console.log("Successfully retrieved all employees.");
-      const sanitizedItems = Items.map(item => {
+      const sanitizedItems = Items.map((item) => {
         const sanitizedItem = { ...item };
         delete sanitizedItem.password; // Assuming password field is called 'password'
         return sanitizedItem;
       });
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_EMPLOYEES,
-        data: paginate(sanitizedItems.map(item => unmarshall(item)), pageNo, pageSize),
+        data: paginate(
+          sanitizedItems.map((item) => unmarshall(item)),
+          pageNo,
+          pageSize
+        ),
       });
     }
   } catch (e) {
@@ -800,10 +804,10 @@ const paginate = (allItems, pageNo, pageSize) => {
   console.log("items", items);
   // Return paginated data along with metadata
   return {
-      items,
-      totalItems: allItems.length,
-      currentPage: pageNo,
-      totalPages: Math.ceil(allItems.length / pageSize)
+    items,
+    totalItems: allItems.length,
+    currentPage: pageNo,
+    totalPages: Math.ceil(allItems.length / pageSize),
   };
 };
 
@@ -812,13 +816,13 @@ const getAllEmployeesAsset = async (event) => {
   const response = {
     statusCode: httpStatusCodes.SUCCESS,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   };
   const { pageNo, pageSize } = event.queryStringParameters;
   try {
     const params = {
-      TableName : process.env.ASSETS_TABLE ,
+      TableName: process.env.ASSETS_TABLE,
     };
     const { Items } = await client.send(new ScanCommand(params));
     Items.sort((a, b) => parseInt(a.assetId.N) - parseInt(b.assetId.N));
@@ -831,13 +835,17 @@ const getAllEmployeesAsset = async (event) => {
       });
     } else {
       console.log("Successfully retrieved asset details of all employees.");
-      const sanitizedItems = Items.map(item => {
+      const sanitizedItems = Items.map((item) => {
         const { password, ...sanitizedItem } = item;
         return sanitizedItem;
       });
       response.body = JSON.stringify({
         message: employeesData.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
-        data: paginate(sanitizedItems.map(item => unmarshall(item)), pageNo, pageSize),
+        data: paginate(
+          sanitizedItems.map((item) => unmarshall(item)),
+          pageNo,
+          pageSize
+        ),
       });
     }
   } catch (e) {
@@ -856,13 +864,13 @@ const getAllEmployeesMetadata = async (event) => {
   const response = {
     statusCode: httpStatusCodes.SUCCESS,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   };
   const { pageNo, pageSize } = event.queryStringParameters;
   try {
     const params = {
-      TableName : process.env.METADATA_TABLE,
+      TableName: process.env.METADATA_TABLE,
     };
     const { Items } = await client.send(new ScanCommand(params));
     Items.sort((a, b) => parseInt(a.metadataId.N) - parseInt(b.metadataId.N));
@@ -875,10 +883,14 @@ const getAllEmployeesMetadata = async (event) => {
       });
     } else {
       console.log("Successfully retrieved asset details of all employees.");
-      
+
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION,
-        data: paginate(Items.map(item => unmarshall(item)), pageNo, pageSize),
+        data: paginate(
+          Items.map((item) => unmarshall(item)),
+          pageNo,
+          pageSize
+        ),
       });
     }
   } catch (e) {
@@ -892,17 +904,22 @@ const getAllEmployeesMetadata = async (event) => {
   return response;
 };
 
-
 const documentUpload = async (event) => {
   console.log("Inside the document upload");
   const response = {
     statusCode: httpStatusCodes.OK,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   };
   try {
+    console.log("Inside the try block document upload");
     // Parse form data
+    // Ensure event is an HTTP request
+    if (!event || !event.headers || !event.body) {
+      throw new Error("Invalid HTTP request");
+    }
+    const body = JSON.parse(event.body);
     const form = new formidable.IncomingForm();
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(event, (err, fields, files) => {
@@ -920,12 +937,18 @@ const documentUpload = async (event) => {
     };
 
     // Check for required fields
-    if (!documentInfo.documentType || !documentInfo.documentName || !documentInfo.employeeId || !files) {
+    if (
+      !documentInfo.documentType ||
+      !documentInfo.documentName ||
+      !documentInfo.employeeId ||
+      !files
+    ) {
       throw new Error("Required fields are missing.");
     }
 
     // Validate file types and size
-    const allowedFileTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+    console.log("checking the extensions os files");
+    const allowedFileTypes = ["image/png", "image/jpeg", "application/pdf"];
     const maxFileSize = 3 * 1024 * 1024; // 3MB
     const uploadedFiles = [];
     for (const file of Object.values(files)) {
@@ -933,21 +956,23 @@ const documentUpload = async (event) => {
         throw new Error(`File type ${file.type} is not allowed.`);
       }
       if (file.size > maxFileSize) {
-        throw new Error(`File ${file.name} exceeds the maximum file size of 3MB.`);
+        throw new Error(
+          `File ${file.name} exceeds the maximum file size of 3MB.`
+        );
       }
       uploadedFiles.push(file);
     }
-
+    console.log("uploading file to s3 and generating presigned URL");
     // Upload files to S3 bucket and generate pre-signed URLs
-    const uploadPromises = uploadedFiles.map(async file => {
+    const uploadPromises = uploadedFiles.map(async (file) => {
       const params = {
-        Bucket: 'uat-employeedocumentupload',
+        Bucket: "uat-employeedocumentupload",
         Key: `${Date.now()}_${file.name}`,
         Body: fs.createReadStream(file.path),
-        ACL: 'public-read', // Set ACL as per your requirement
+        ACL: "public-read", // Set ACL as per your requirement
       };
       const uploadResult = await s3.upload(params).promise();
-      const signedUrl = await s3.getSignedUrlPromise('getObject', {
+      const signedUrl = await s3.getSignedUrlPromise("getObject", {
         Bucket: params.Bucket,
         Key: params.Key,
         Expires: 3600, // URL expires in 1 hour (adjust as needed)
@@ -957,18 +982,20 @@ const documentUpload = async (event) => {
     const uploadedFileObjects = await Promise.all(uploadPromises);
 
     // Prepare items for batch write to DynamoDB
-    const putRequests = uploadedFileObjects.map(({ uploadResult, signedUrl }) => ({
-      PutRequest: {
-        Item: marshall({
-          documentId: uploadResult.Key,
-          documentName: uploadResult.key.split('_')[1], // Extracting original file name
-          documentUrl: uploadResult.Location,
-          signedUrl: signedUrl,
-          documentInfo: documentInfo,
-          // Add more fields as needed
-        }),
-      },
-    }));
+    const putRequests = uploadedFileObjects.map(
+      ({ uploadResult, signedUrl }) => ({
+        PutRequest: {
+          Item: marshall({
+            documentId: uploadResult.Key,
+            documentName: uploadResult.key.split("_")[1], // Extracting original file name
+            documentUrl: uploadResult.Location,
+            signedUrl: signedUrl,
+            documentInfo: documentInfo,
+            // Add more fields as needed
+          }),
+        },
+      })
+    );
 
     // Batch write items to DynamoDB
     const params = {
@@ -1006,5 +1033,5 @@ module.exports = {
   getAllEmployees,
   getAllEmployeesAsset,
   getAllEmployeesMetadata,
-  documentUpload
+  documentUpload,
 };
