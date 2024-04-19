@@ -13,7 +13,7 @@ const AWS = require("aws-sdk");
 const client = new DynamoDBClient();
 const formidable = require("formidable");
 const fs = require("fs");
-const { parse } = require('multipart-parser');
+const multipart = require('aws-lambda-multipart-parser');
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -921,13 +921,12 @@ const documentUpload = async (event) => {
     }
     console.log("Ensure event is an HTTP request done");
    
-    const parts = parse(event.body, event.headers['content-type']);
+    const parts = multipart.parse(event, true);
 
     // Extract document info and file
-    const documentInfo = JSON.parse(parts.find(part => part.name === 'documentInfo').data.toString());
-    const file = parts.find(part => part.filename);
-    console.log("checking the required feilds");
-    // Check for required fields
+    const documentInfo = JSON.parse(parts['documentInfo']);
+    const file = parts['files'][0]; // Assuming only one file is uploaded
+    
     if (!documentInfo.documentType || !documentInfo.documentName || !documentInfo.employeeId) {
       throw new Error("Required fields are missing.");
     }

@@ -898,6 +898,11 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
+aws-lambda-multipart-parser@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.npmjs.org/aws-lambda-multipart-parser/-/aws-lambda-multipart-parser-0.1.3.tgz"
+  integrity sha512-xCvTaRab2+Kh2iYK1OVIpt3X6VVutHhHwrdmtQPqUo6fACo7/Dm1rL41C7J/fRnJqChMfOfDif2lbMVHBWVglA==
+
 aws-sdk@^2.1548.0:
   version "2.1548.0"
   resolved "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.1548.0.tgz"
