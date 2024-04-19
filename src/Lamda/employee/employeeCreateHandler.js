@@ -940,7 +940,7 @@ const documentUpload = async (event) => {
     // Upload files to S3 bucket and generate pre-signed URLs
     const uploadPromises = uploadedFiles.map(async file => {
       const params = {
-        Bucket: 'dev-employeedocumentupload',
+        Bucket: 'uat-employeedocumentupload',
         Key: `${Date.now()}_${file.name}`,
         Body: fs.createReadStream(file.path),
         ACL: 'public-read', // Set ACL as per your requirement
