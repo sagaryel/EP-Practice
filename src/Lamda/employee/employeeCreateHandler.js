@@ -909,101 +909,97 @@ const documentUpload = async (event) => {
   const response = {
     statusCode: httpStatusCodes.OK,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-    },
+      'Access-Control-Allow-Origin': '*',
+    }
   };
   try {
-    console.log("Inside the try block document upload");
     // Ensure event is an HTTP request
+    console.log("Inside the try block document upload");
     if (!event || !event.body) {
       throw new Error("Invalid HTTP request");
     }
     console.log("Ensure event is an HTTP request done");
-    // Parse form data from event
-    const form = new formidable.IncomingForm();
-    const formData = await new Promise((resolve, reject) => {
-      form.parse(event, (err, fields, files) => {
-        if (err) reject(err);
-        resolve({ fields, files });
-      });
-    });
-    console.log("Extract document info from fields");
-    // Extract document info from fields
-    const documentInfo = JSON.parse(formData.fields.documentInfo);
+    // Parse multipart/form-data payload
+    const contentType = event.headers['content-type'];
+    if (!contentType.startsWith('multipart/form-data')) {
+      throw new Error('Invalid content type. Expecting multipart/form-data.');
+    }
 
-    // Check for required fields
+    // Extract document info from the body
+    const body = JSON.parse(event.body);
+    const documentInfo = {
+      documentType: body.documentType || "",
+      documentName: body.documentName || "",
+      updateDate: body.updateDate || moment().format(),
+      employeeId: parseInt(body.employeeId) || 0,
+    };
+
     console.log("checking the required feilds");
+    // Check for required fields
     if (!documentInfo.documentType || !documentInfo.documentName || !documentInfo.employeeId) {
       throw new Error("Required fields are missing.");
     }
 
     // Validate file
-    const file = formData.files.files;
+    const file = event.isBase64Encoded ? Buffer.from(body.files, 'base64') : Buffer.from(body.files, 'binary');
     if (!file) {
       throw new Error("File is missing.");
     }
-    // Validate file types and size
-    console.log("checking the extensions os files");
-    const allowedFileTypes = ["image/png", "image/jpeg", "application/pdf"];
-    const maxFileSize = 3 * 1024 * 1024; // 3MB
-    const uploadedFiles = [];
-    for (const file of Object.values(files)) {
-      if (!allowedFileTypes.includes(file.type)) {
-        throw new Error(`File type ${file.type} is not allowed.`);
-      }
-      if (file.size > maxFileSize) {
-        throw new Error(
-          `File ${file.name} exceeds the maximum file size of 3MB.`
-        );
-      }
-      uploadedFiles.push(file);
+    const fileExtension = body.filename.split('.').pop();
+    const allowedFileTypes = ['png', 'jpeg', 'jpg', 'pdf'];
+    if (!allowedFileTypes.includes(fileExtension.toLowerCase())) {
+      throw new Error(`File type ${fileExtension} is not allowed.`);
     }
-    console.log("uploading file to s3 and generating presigned URL");
-    // Upload files to S3 bucket and generate pre-signed URLs
-    const uploadPromises = uploadedFiles.map(async (file) => {
-      const params = {
-        Bucket: "uat-employeedocumentupload",
-        Key: `${Date.now()}_${file.name}`,
-        Body: fs.createReadStream(file.path),
-        ACL: "public-read", // Set ACL as per your requirement
-      };
-      const uploadResult = await s3.upload(params).promise();
-      const signedUrl = await s3.getSignedUrlPromise("getObject", {
-        Bucket: params.Bucket,
-        Key: params.Key,
-        Expires: 3600, // URL expires in 1 hour (adjust as needed)
-      });
-      return { uploadResult, signedUrl };
-    });
-    const uploadedFileObjects = await Promise.all(uploadPromises);
+    const maxFileSize = 3 * 1024 * 1024; // 3MB
+    if (file.length > maxFileSize) {
+      throw new Error(`File exceeds the maximum file size of 3MB.`);
+    }
 
-    // Prepare items for batch write to DynamoDB
-    const putRequests = uploadedFileObjects.map(
-      ({ uploadResult, signedUrl }) => ({
-        PutRequest: {
-          Item: marshall({
-            documentId: uploadResult.Key,
-            documentName: uploadResult.key.split("_")[1], // Extracting original file name
-            documentUrl: uploadResult.Location,
-            signedUrl: signedUrl,
-            documentInfo: documentInfo,
-            // Add more fields as needed
-          }),
-        },
-      })
-    );
-
-    // Batch write items to DynamoDB
+    // Upload file to S3 bucket and generate pre-signed URL
     const params = {
-      RequestItems: {
-        [process.env.DOCUMENT_TABLE]: putRequests,
+      Bucket: 'uat-employeedocumentupload',
+      Key: `${Date.now()}_${body.filename}`,
+      Body: file,
+      ContentType: contentType,
+      ACL: 'public-read', // Set ACL as per your requirement
+    };
+    const uploadResult = await s3.upload(params).promise();
+    const signedUrl = await s3.getSignedUrlPromise('getObject', {
+      Bucket: params.Bucket,
+      Key: params.Key,
+      Expires: 3600, // URL expires in 1 hour (adjust as needed)
+    });
+
+    // Prepare item for batch write to DynamoDB
+    const putRequest = {
+      PutRequest: {
+        Item: marshall({
+          documentId: uploadResult.Key,
+          documentName: uploadResult.key.split('_')[1],
+          documentUrl: uploadResult.Location,
+          signedUrl: signedUrl,
+          documentInfo: documentInfo,
+        }),
       },
     };
-    await client.send(new BatchWriteItemCommand(params)); // Use client instead of dynamodb
+
+    // Batch write item to DynamoDB
+    const paramsDB = {
+      RequestItems: {
+        [process.env.DOCUMENT_TABLE]: [putRequest],
+      },
+    };
+    await client.send(new BatchWriteItemCommand(paramsDB));
 
     response.body = JSON.stringify({
       message: "Document uploaded successfully",
-      uploadedFiles: uploadedFileObjects,
+      uploadedFile: {
+        documentId: uploadResult.Key,
+        documentName: uploadResult.key.split('_')[1],
+        documentUrl: uploadResult.Location,
+        signedUrl: signedUrl,
+        documentInfo: documentInfo,
+      },
     });
   } catch (e) {
     console.error(e);
