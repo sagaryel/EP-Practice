@@ -914,19 +914,25 @@ const documentUpload = async (event) => {
   };
   try {
     console.log("Inside the try block document upload");
+    // Parse form data
     // Ensure event is an HTTP request
-    if (!event || !event.body) {
+    if (!event || !event.headers || !event.body) {
       throw new Error("Invalid HTTP request");
     }
-
-    // Parse form data from event body
     const body = JSON.parse(event.body);
+    const form = new formidable.IncomingForm();
+    const { fields, files } = await new Promise((resolve, reject) => {
+      form.parse(event, (err, fields, files) => {
+        if (err) reject(err);
+        resolve({ fields, files });
+      });
+    });
 
-    // Extract document info from body
+    // Extract document info from fields
     const documentInfo = {
       documentType: body.documentType || "",
       documentName: body.documentName || "",
-      updateDate: body.updateDate || moment().format(), // Assuming updateDate is in ISO format or can be formatted as needed
+      updateDate: body.updateDate || moment().format(), // assuming updateDate is in ISO format or can be formatted as needed
       employeeId: parseInt(body.employeeId) || 0,
     };
 
@@ -934,22 +940,14 @@ const documentUpload = async (event) => {
     if (
       !documentInfo.documentType ||
       !documentInfo.documentName ||
-      !documentInfo.employeeId
+      !documentInfo.employeeId ||
+      !files
     ) {
       throw new Error("Required fields are missing.");
     }
 
-    // Parse files from event
-    const form = new formidable.IncomingForm();
-    const files = await new Promise((resolve, reject) => {
-      form.parse(event, (err, fields, files) => {
-        if (err) reject(err);
-        resolve(files);
-      });
-    });
-
-    console.log("checking the extensions os files");
     // Validate file types and size
+    console.log("checking the extensions os files");
     const allowedFileTypes = ["image/png", "image/jpeg", "application/pdf"];
     const maxFileSize = 3 * 1024 * 1024; // 3MB
     const uploadedFiles = [];
@@ -964,7 +962,6 @@ const documentUpload = async (event) => {
       }
       uploadedFiles.push(file);
     }
-
     console.log("uploading file to s3 and generating presigned URL");
     // Upload files to S3 bucket and generate pre-signed URLs
     const uploadPromises = uploadedFiles.map(async (file) => {
@@ -1006,7 +1003,7 @@ const documentUpload = async (event) => {
         [process.env.DOCUMENT_TABLE]: putRequests,
       },
     };
-    await client.send(new BatchWriteItemCommand(params));
+    await client.send(new BatchWriteItemCommand(params)); // Use client instead of dynamodb
 
     response.body = JSON.stringify({
       message: "Document uploaded successfully",
