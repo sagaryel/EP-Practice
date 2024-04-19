@@ -10,6 +10,7 @@ provider:
     ASSETS_TABLE: ${self:custom.assetTableName}
     BANK_TABLE: ${self:custom.bankTableName}
     PF_ESI_TABLE : ${self:custom.pfTableName}
+    DOCUMENT_TABLE : ${self:custom.documentTableName}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -25,12 +26,14 @@ provider:
         - !GetAtt AssetTable.Arn
         - !GetAtt BankTable.Arn
         - !GetAtt PfDetailsTable.Arn
+        - !GetAtt documentsDetailsTable.Arn
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
   assetTableName: asset-Details-${self:provider.stage}
   bankTableName: bank-${self:provider.stage}
   pfTableName: pf-esi-Details
+  documentTableName: document-details
 plugins:
   - serverless-iam-roles-per-function
 functions:
@@ -163,6 +166,18 @@ functions:
               querystrings:
                 pageNo : true
                 pageSize : true
+  documentUpload:
+    handler: src/Lamda/employee/employeeCreateHandler.documentUpload
+    name: documentUpload
+    memorySize: 128
+    timeout: 300 # Adjust timeout as per your requirement
+    events:
+      - http:
+          path: document/upload
+          method: POST
+          cors: true
+          request:
+            contentHandling: CONVERT_TO_BINARY
 resources:
   Resources:
     EmployeeTable:
@@ -240,6 +255,19 @@ resources:
             AttributeType: N
         KeySchema:
           - AttributeName: pfId
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    documentsDetailsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.documentTableName}
+        AttributeDefinitions:
+          - AttributeName: documentId
+            AttributeType: N
+        KeySchema:
+          - AttributeName: documentId
             KeyType: HASH
         ProvisionedThroughput:
             ReadCapacityUnits: 1

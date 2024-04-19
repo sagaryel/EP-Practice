@@ -4,11 +4,15 @@ const {
   QueryCommand,
   UpdateItemCommand,
   GetItemCommand,
+  BatchWriteItemCommand,
   ScanCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const moment = require("moment");
 const client = new DynamoDBClient();
+const formidable = require('formidable');
+const fs = require('fs');
+const s3 = new AWS.S3();
 const {
   httpStatusCodes,
   httpStatusMessages,
@@ -886,6 +890,109 @@ const getAllEmployeesMetadata = async (event) => {
   }
   return response;
 };
+
+
+const documentUpload = async (event) => {
+  console.log("Inside the document upload");
+  const response = {
+    statusCode: httpStatusCodes.OK,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  };
+  try {
+    // Parse form data
+    const form = new formidable.IncomingForm();
+    const { fields, files } = await new Promise((resolve, reject) => {
+      form.parse(event, (err, fields, files) => {
+        if (err) reject(err);
+        resolve({ fields, files });
+      });
+    });
+
+    // Extract document info from fields
+    const documentInfo = {
+      documentType: fields.documentType || "",
+      documentName: fields.documentName || "",
+      updateDate: fields.updateDate || moment().format(), // assuming updateDate is in ISO format or can be formatted as needed
+      employeeId: parseInt(fields.employeeId) || 0,
+    };
+
+    // Check for required fields
+    if (!documentInfo.documentType || !documentInfo.documentName || !documentInfo.employeeId || !files) {
+      throw new Error("Required fields are missing.");
+    }
+
+    // Validate file types and size
+    const allowedFileTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+    const maxFileSize = 3 * 1024 * 1024; // 3MB
+    const uploadedFiles = [];
+    for (const file of Object.values(files)) {
+      if (!allowedFileTypes.includes(file.type)) {
+        throw new Error(`File type ${file.type} is not allowed.`);
+      }
+      if (file.size > maxFileSize) {
+        throw new Error(`File ${file.name} exceeds the maximum file size of 3MB.`);
+      }
+      uploadedFiles.push(file);
+    }
+
+    // Upload files to S3 bucket and generate pre-signed URLs
+    const uploadPromises = uploadedFiles.map(async file => {
+      const params = {
+        Bucket: 'dev-employeedocumentupload',
+        Key: `${Date.now()}_${file.name}`,
+        Body: fs.createReadStream(file.path),
+        ACL: 'public-read', // Set ACL as per your requirement
+      };
+      const uploadResult = await s3.upload(params).promise();
+      const signedUrl = await s3.getSignedUrlPromise('getObject', {
+        Bucket: params.Bucket,
+        Key: params.Key,
+        Expires: 3600, // URL expires in 1 hour (adjust as needed)
+      });
+      return { uploadResult, signedUrl };
+    });
+    const uploadedFileObjects = await Promise.all(uploadPromises);
+
+    // Prepare items for batch write to DynamoDB
+    const putRequests = uploadedFileObjects.map(({ uploadResult, signedUrl }) => ({
+      PutRequest: {
+        Item: marshall({
+          documentId: uploadResult.Key,
+          documentName: uploadResult.key.split('_')[1], // Extracting original file name
+          documentUrl: uploadResult.Location,
+          signedUrl: signedUrl,
+          documentInfo: documentInfo,
+          // Add more fields as needed
+        }),
+      },
+    }));
+
+    // Batch write items to DynamoDB
+    const params = {
+      RequestItems: {
+        [process.env.DOCUMENT_TABLE]: putRequests,
+      },
+    };
+    await client.send(new BatchWriteItemCommand(params)); // Use client instead of dynamodb
+
+    response.body = JSON.stringify({
+      message: "Document uploaded successfully",
+      uploadedFiles: uploadedFileObjects,
+    });
+  } catch (e) {
+    console.error(e);
+    response.statusCode = httpStatusCodes.BAD_REQUEST;
+    response.body = JSON.stringify({
+      message: "Failed to upload document",
+      errorMsg: e.message,
+      errorStack: e.stack,
+    });
+  }
+  return response;
+};
+
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
@@ -897,5 +1004,6 @@ module.exports = {
   getPfEsiDetailsByEmployeeId,
   getAllEmployees,
   getAllEmployeesAsset,
-  getAllEmployeesMetadata
+  getAllEmployeesMetadata,
+  documentUpload
 };
