@@ -925,8 +925,12 @@ const documentUpload = async (event) => {
     //   throw new Error('Invalid content type. Expecting multipart/form-data.');
     // }
 
+    console.log("Event body:", event.body);
     // Extract document info from the body
-    const body = JSON.parse(event.body);
+    let body = event.body;
+    if (typeof body === 'string') {
+      body = JSON.parse(body);
+    }
     const documentInfo = {
       documentType: body.documentType || "",
       documentName: body.documentName || "",
