@@ -914,40 +914,42 @@ const documentUpload = async (event) => {
   };
   try {
     console.log("Inside the try block document upload");
-    // Parse form data
     // Ensure event is an HTTP request
-    if (!event || !event.headers || !event.body) {
+    if (!event || !event.body) {
       throw new Error("Invalid HTTP request");
     }
-    const body = JSON.parse(event.body);
-    const form = new formidable.IncomingForm();
-    const { fields, files } = await new Promise((resolve, reject) => {
-      form.parse(event, (err, fields, files) => {
-        if (err) reject(err);
-        resolve({ fields, files });
-      });
-    });
 
-    // Extract document info from fields
+    // Parse form data from event body
+    const body = JSON.parse(event.body);
+
+    // Extract document info from body
     const documentInfo = {
-      documentType: fields.documentType || "",
-      documentName: fields.documentName || "",
-      updateDate: fields.updateDate || moment().format(), // assuming updateDate is in ISO format or can be formatted as needed
-      employeeId: parseInt(fields.employeeId) || 0,
+      documentType: body.documentType || "",
+      documentName: body.documentName || "",
+      updateDate: body.updateDate || moment().format(), // Assuming updateDate is in ISO format or can be formatted as needed
+      employeeId: parseInt(body.employeeId) || 0,
     };
 
     // Check for required fields
     if (
       !documentInfo.documentType ||
       !documentInfo.documentName ||
-      !documentInfo.employeeId ||
-      !files
+      !documentInfo.employeeId
     ) {
       throw new Error("Required fields are missing.");
     }
 
-    // Validate file types and size
+    // Parse files from event
+    const form = new formidable.IncomingForm();
+    const files = await new Promise((resolve, reject) => {
+      form.parse(event, (err, fields, files) => {
+        if (err) reject(err);
+        resolve(files);
+      });
+    });
+
     console.log("checking the extensions os files");
+    // Validate file types and size
     const allowedFileTypes = ["image/png", "image/jpeg", "application/pdf"];
     const maxFileSize = 3 * 1024 * 1024; // 3MB
     const uploadedFiles = [];
@@ -962,6 +964,7 @@ const documentUpload = async (event) => {
       }
       uploadedFiles.push(file);
     }
+
     console.log("uploading file to s3 and generating presigned URL");
     // Upload files to S3 bucket and generate pre-signed URLs
     const uploadPromises = uploadedFiles.map(async (file) => {
@@ -1003,7 +1006,7 @@ const documentUpload = async (event) => {
         [process.env.DOCUMENT_TABLE]: putRequests,
       },
     };
-    await client.send(new BatchWriteItemCommand(params)); // Use client instead of dynamodb
+    await client.send(new BatchWriteItemCommand(params));
 
     response.body = JSON.stringify({
       message: "Document uploaded successfully",
