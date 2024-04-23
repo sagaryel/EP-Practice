@@ -23,6 +23,7 @@ const {
   validateEmployeeDetails,
   validateBankUpdateDetails,
   validatePfDetails,
+  validateCreateDocument
 } = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
 //const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
