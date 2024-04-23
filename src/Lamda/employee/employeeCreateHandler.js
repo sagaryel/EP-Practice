@@ -1048,7 +1048,7 @@ const createEmployeeDocument = async (event) => {
       const params = {
         TableName: process.env.DOCUMENT_TABLE,
         Item: marshall({
-          documentId: nextSerialNumber,
+          documentId: nextSerialNumber.toString(),
           employeeId: requestBody.employeeId,
           documentType: requestBody.documentType,
           documentName: requestBody.documentName,
