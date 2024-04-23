@@ -27,7 +27,9 @@ const httpStatusMessages = {
     NO_EMPLOYEES_FOUND : 'no employees found',
     SUCCESSFULLY_RETRIEVED_ASSET_INFORMATION : 'Successfully retrived asset information',
     FAILED_TO_RETRIEVE_ASSET_INFORMATION : 'Failed to retrive asset information',
-    ASSET_INFORMATION_NOT_FOUND : 'asset information not found'
+    ASSET_INFORMATION_NOT_FOUND : 'asset information not found',
+    FAILED_TO_CREATE_EMPLOYEE_DOCUMENT :'Failed to create employee document',
+    SUCCESSFULLY_CREATED_EMPLOYEE_DOCUMENT : 'successfully created employee document'
 }
 
 

@@ -198,6 +198,7 @@ async function getHighestSerialNumber() {
   }
 }
 
+
 const getAssignmentsByEmployeeId = async (event) => {
   console.log("Fetching assignments details by employee ID");
   const employeeId = event.pathParameters.employeeId;
@@ -1002,6 +1003,109 @@ const documentUpload = async (event) => {
   return response;
 };
 
+
+const createEmployeeDocument = async (event) => {
+  console.log("Inside the create employee document function");
+  const response = {
+    statusCode: httpStatusCodes.SUCCESS,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
+  try {
+    const requestBody = JSON.parse(event.body);
+    const employeeId = requestBody.employeeId;
+    console.log("employee Id :", employeeId);
+
+    // Generate unique documentId
+    const highestSerialNumber = await getHighestSerialNumber1();
+    console.log("Highest Serial Number:", highestSerialNumber);
+    const nextSerialNumber =
+      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+
+    if (!validateCreateDocument(requestBody)) {
+      throw new Error("Required fields are missing.");
+    }
+
+    // Check if the employee already has a document
+    const params = {
+      TableName: process.env.DOCUMENT_TABLE,
+      FilterExpression: "employeeId = :employeeId",
+      ExpressionAttributeValues: {
+        ":employeeId": { N: employeeId }, // Assuming employeeId is a string
+      },
+    };
+    const command = new ScanCommand(params);
+    const { Items } = await client.send(command);
+
+    if (Items && Items.length !== 0) {
+      // If documents already exist for the employee, throw an error
+      throw new Error("Document already exists for this employee.");
+    } else {
+      // If no document exists, create a new record
+      console.log("Inside the employee document create function");
+      const params = {
+        TableName: process.env.DOCUMENT_TABLE,
+        Item: marshall({
+          documentId: nextSerialNumber,
+          employeeId: requestBody.employeeId,
+          documentType: requestBody.documentType,
+          documentName: requestBody.documentName,
+          updateDate: requestBody.updateDate,
+          createdDateTime: createdDate // Assuming createdDate is a timestamp
+        }),
+      };
+
+      const createResult = await client.send(new PutItemCommand(params));
+      console.log("Create result:", createResult);
+
+      response.body = JSON.stringify({
+        message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DOCUMENT,
+        data: unmarshall(params.Item),
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    response.statusCode = httpStatusCodes.BAD_REQUEST;
+    response.body = JSON.stringify({
+      message: httpStatusMessages.FAILED_TO_CREATE_EMPLOYEE_DOCUMENT,
+      errorMsg: e.message,
+      errorStack: e.stack,
+    });
+  }
+  return response;
+};
+
+async function getHighestSerialNumber1() {
+  const params = {
+    TableName: process.env.DOCUMENT_TABLE,
+    ProjectionExpression: "documentId",
+    Limit: 100, // Increase the limit to retrieve more items for sorting
+  };
+
+  try {
+    const result = await client.send(new ScanCommand(params));
+
+    // Sort the items in descending order based on assignmentId
+    const sortedItems = result.Items.sort((a, b) => {
+      return parseInt(b.documentId.N) - parseInt(a.documentId.N);
+    });
+
+    console.log("Sorted Items:", sortedItems); // Log the sorted items
+
+    if (sortedItems.length === 0) {
+      return 0; // If no records found, return null
+    } else {
+      const highestDocumentId = parseInt(sortedItems[0].documentId.N);
+      console.log("Highest Assignment ID:", highestDocumentId);
+      return highestDocumentId;
+    }
+  } catch (error) {
+    console.error("Error retrieving highest serial number:", error);
+    throw error; // Propagate the error up the call stack
+  }
+}
+
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
@@ -1015,4 +1119,5 @@ module.exports = {
   getAllEmployeesAsset,
   getAllEmployeesMetadata,
   documentUpload,
+  createEmployeeDocument
 };

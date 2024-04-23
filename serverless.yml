@@ -181,6 +181,15 @@ functions:
           cors: true
           request:
             contentHandling: CONVERT_TO_BINARY
+  createDocument:
+    handler: src/Lamda/employee/employeeCreateHandler.createEmployeeDocument
+    name: createDocument
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: documennt
+          method: POST
 resources:
   Resources:
     EmployeeTable:

@@ -141,8 +141,33 @@ function isValidDateFormat(dateString) {
   return regex.test(dateString);;
 }
 
+const validateCreateDocument = (requestBody) => {
+  const {
+    documentType,
+    documentName,
+    updateDate,
+    employeeId,
+   } = requestBody;
+
+  // Check if required fields are missing
+  if (!documentType || !documentName || !employeeId) {
+    return false;
+  }
+
+  // Check if updateDate is in MM/DD/YYYY format and is today's date
+  const today = new Date();
+  const updateDateObj = new Date(updateDate);
+  const isToday = updateDateObj.toDateString() === today.toDateString();
+  if (!isValidDateFormat(updateDate) || !isToday) {
+    throw new Error("updateDate must be today's date in MM/DD/YYYY format.");
+  }
+
+  return true;
+};
+
 module.exports = {
   validateEmployeeDetails,
   validateBankUpdateDetails,
   validatePfDetails,
+  validateCreateDocument
 };
