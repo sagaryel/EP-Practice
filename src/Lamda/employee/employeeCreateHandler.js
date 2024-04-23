@@ -1033,7 +1033,7 @@ const createEmployeeDocument = async (event) => {
       TableName: process.env.DOCUMENT_TABLE,
       FilterExpression: "employeeId = :employeeId",
       ExpressionAttributeValues: {
-        ":employeeId": { N: employeeId }, // Assuming employeeId is a string
+        ":employeeId": { S: employeeId }, // Assuming employeeId is a string
       },
     };
     const command = new ScanCommand(params);
@@ -1048,7 +1048,7 @@ const createEmployeeDocument = async (event) => {
       const params = {
         TableName: process.env.DOCUMENT_TABLE,
         Item: marshall({
-          documentId: nextSerialNumber.toString(),
+          documentId: nextSerialNumber,
           employeeId: requestBody.employeeId,
           documentType: requestBody.documentType,
           documentName: requestBody.documentName,
