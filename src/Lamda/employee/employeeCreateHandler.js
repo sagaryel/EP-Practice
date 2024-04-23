@@ -935,7 +935,7 @@ const documentUpload = async (event) => {
     if (!file) {
       throw new Error("File is missing.");
     }
-    const fileExtension = body.filename.split('.').pop();
+    const fileExtension = file.filename.split('.').pop();
     const allowedFileTypes = ['png', 'jpeg', 'jpg', 'pdf'];
     if (!allowedFileTypes.includes(fileExtension.toLowerCase())) {
       throw new Error(`File type ${fileExtension} is not allowed.`);
