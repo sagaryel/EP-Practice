@@ -1062,7 +1062,8 @@ const createEmployeeDocument = async (event) => {
 
       response.body = JSON.stringify({
         message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DOCUMENT,
-        data: unmarshall(params.Item),
+        documentId: nextSerialNumber,
+        //data: unmarshall(params.Item),
       });
     }
   } catch (e) {
