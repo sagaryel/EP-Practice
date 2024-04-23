@@ -150,7 +150,7 @@ const validateCreateDocument = (requestBody) => {
    } = requestBody;
 
   // Check if required fields are missing
-  if (!documentType || !documentName || !employeeId || updateDate) {
+  if (!documentType || !documentName || !employeeId || !updateDate) {
     return false;
   }
 
