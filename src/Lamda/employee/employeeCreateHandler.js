@@ -1174,13 +1174,16 @@ const autoIncreamentId = async (table, id) => {
 
 
 const uploadDocument = async (event) => {
+  console.log("Inside the upload document function");
   try {
+    console.log("Inside the try block upload document function");
     const documentId = event.pathParameters.documentId;
     if (!documentId) {
       throw new Error('document id is required');
     }
+    console.log("document Id getting fro req");
     const { filename, data } = extractFile(event);
-
+    console.log("extract file function is exicuted");
     // Upload file to S3
     await s3.putObject({
       Bucket: BUCKET,
@@ -1189,6 +1192,7 @@ const uploadDocument = async (event) => {
     }).promise();
 
     // Construct S3 object URL
+    console.log("Construct S3 object URL");
     const s3ObjectUrl = `https://${BUCKET}.s3.amazonaws.com/${filename}`;
 
     // Check if an document already exists for the employee
