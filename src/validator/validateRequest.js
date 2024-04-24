@@ -228,5 +228,4 @@ module.exports = {
   validateBankUpdateDetails,
   validatePfDetails,
   validateCreateDocument,
-  autoIncreamentId
 };
