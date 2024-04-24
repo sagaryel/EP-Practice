@@ -190,6 +190,16 @@ functions:
       - http:
           path: documennt
           method: POST
+  uploadDocument:
+    handler: src/Lamda/employee/employeeCreateHandler.uploadDocument
+    name: uploadDocument
+    memorySize: 128
+    timeout: 120
+    events:
+      - http:
+          path: documennt/{documentId}
+          method: PUT
+          cors: true    
 resources:
   Resources:
     EmployeeTable:

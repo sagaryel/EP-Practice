@@ -13,7 +13,9 @@ const AWS = require("aws-sdk");
 const client = new DynamoDBClient();
 const formidable = require("formidable");
 const fs = require("fs");
+const BUCKET = 'uat-employeedocumentupload';
 const multipart = require('aws-lambda-multipart-parser');
+const parseMultipart = require("parse-multipart");
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -907,7 +909,7 @@ const getAllEmployeesMetadata = async (event) => {
   return response;
 };
 
-const documentUpload = async (event) => {
+const documentUpload1 = async (event) => {
   console.log("Inside the document upload");
   const response = {
     statusCode: httpStatusCodes.OK,
@@ -1170,6 +1172,122 @@ const autoIncreamentId = async (table, id) => {
   }
 };
 
+
+const uploadDocument = async (event) => {
+  try {
+    const documentId = event.pathParameters.documentId;
+    if (!documentId) {
+      throw new Error('document id is required');
+    }
+    const { filename, data } = extractFile(event);
+
+    // Upload file to S3
+    await s3.putObject({
+      Bucket: BUCKET,
+      Key: filename,
+      Body: data,
+    }).promise();
+
+    // Construct S3 object URL
+    const s3ObjectUrl = `https://${BUCKET}.s3.amazonaws.com/${filename}`;
+
+    // Check if an document already exists for the employee
+    const existingDocument = await getDocumentByEmployeeId(event.pathParameters.documentId);
+      if (!existingDocument) {
+        throw new Error("Document Details Not found for employee.");
+    }
+    async function getDocumentByEmployeeId(documentId) {
+      const params = {
+        TableName: process.env.DOCUMENT_TABLE,
+        KeyConditionExpression: "documentId = :documentId",
+        ExpressionAttributeValues: {
+          ":documentId": { "N": documentId.toString() },
+        },
+      };
+
+      try {
+        const result = await client.send(new QueryCommand(params));
+        return result.Items.length > 0; // Assuming you want to return true if education exists, false otherwise
+      } catch (error) {
+        console.error("Error retrieving document details for employee:", error);
+        throw error;
+      }
+    }
+
+
+    // Update item in DynamoDB
+    await client.send(new UpdateItemCommand({
+      TableName: process.env.DOCUMENT_TABLE,
+      Key: {
+        documentId: { N: documentId.toString() }, // Assuming educationId is a number
+      },
+      UpdateExpression: "SET link = :link",
+      ExpressionAttributeValues: {
+        ":link": { S: s3ObjectUrl },
+      },
+      ReturnValues: "ALL_NEW" // Return the updated item
+    }));
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        link: s3ObjectUrl,
+        message: "Document details of employee updated successfully",
+      }),
+    };
+  } catch (err) {
+    console.log('error-----', err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: err.message }),
+    };
+  }
+};
+
+
+function extractFile(event) {
+  const contentType = event.headers['Content-Type'];
+  if (!contentType) {
+    throw new Error('Content-Type header is missing in the request.');
+  }
+
+  const boundary = parseMultipart.getBoundary(contentType);
+  if (!boundary) {
+    throw new Error(
+      'Unable to determine the boundary from the Content-Type header.'
+    );
+  }
+
+  const parts = parseMultipart.Parse(
+    Buffer.from(event.body, 'base64'),
+    boundary
+  );
+
+  if (!parts || parts.length === 0) {
+    throw new Error('No parts found in the multipart request.');
+  }
+
+  const [{ filename, data }] = parts;
+
+  if (!filename || !data) {
+    throw new Error(
+      'Invalid or missing file name or data in the multipart request.'
+    );
+  }
+
+  // Check file size (assuming data is in binary format)
+  const fileSizeInMB = data.length / (1024 * 1024); // Convert bytes to MB
+  const maxSizeInMB = 3;
+  if (fileSizeInMB > maxSizeInMB) {
+    throw new Error(`File size exceeds the maximum limit of ${maxSizeInMB} MB.`);
+  }
+
+  return {
+    filename,
+    data,
+  };
+}
+
 module.exports = {
   createEmployee,
   getAssignmentsByEmployeeId,
@@ -1182,6 +1300,7 @@ module.exports = {
   getAllEmployees,
   getAllEmployeesAsset,
   getAllEmployeesMetadata,
-  documentUpload,
-  createEmployeeDocument
+  documentUpload1,
+  createEmployeeDocument,
+  uploadDocument
 };
