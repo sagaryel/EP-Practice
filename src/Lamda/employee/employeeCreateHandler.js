@@ -23,7 +23,8 @@ const {
   validateEmployeeDetails,
   validateBankUpdateDetails,
   validatePfDetails,
-  validateCreateDocument
+  validateCreateDocument,
+  autoIncreamentId
 } = require("../../validator/validateRequest");
 const currentDate = Date.now(); // get the current date and time in milliseconds
 //const formattedDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss"); //formating date
@@ -1019,10 +1020,15 @@ const createEmployeeDocument = async (event) => {
     console.log("employee Id :", employeeId);
 
     // Generate unique documentId
-    const highestSerialNumber = await getHighestSerialNumber1();
-    console.log("Highest Serial Number:", highestSerialNumber);
-    const nextSerialNumber =
-      highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+    // const highestSerialNumber = await getHighestSerialNumber1();
+    // console.log("Highest Serial Number:", highestSerialNumber);
+    // const nextSerialNumber =
+    //   highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
+
+    const newEmployeeId = await autoIncreamentId(
+      process.env.DOCUMENT_TABLE,
+      "documentId"
+    );
 
     if (!validateCreateDocument(requestBody)) {
       throw new Error("Required fields are missing.");
@@ -1048,7 +1054,7 @@ const createEmployeeDocument = async (event) => {
       const params = {
         TableName: process.env.DOCUMENT_TABLE,
         Item: marshall({
-          documentId: nextSerialNumber,
+          documentId: newEmployeeId,
           employeeId: requestBody.employeeId,
           documentType: requestBody.documentType,
           documentName: requestBody.documentName,
