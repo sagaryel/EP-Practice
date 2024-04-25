@@ -1181,9 +1181,19 @@ const uploadDocument = async (event) => {
     if (!documentId) {
       throw new Error('document id is required');
     }
-    console.log("document Id getting fro req");
+    console.log("document Id getting from req");
     const { filename, data } = extractFile(event);
-    console.log("extract file function is exicuted");
+    console.log("extract file function is executed");
+
+    const documentDetails = await getDocumentByEmployeeId(documentId);
+
+    if (!documentDetails) {
+      throw new Error("Document Details Not found for employee.");
+    }
+
+    // Extract required parameters from document details
+    const { documentType, documentName, epochMilliseconds } = documentDetails;
+    
     // Upload file to S3
     await s3.putObject({
       Bucket: BUCKET,
@@ -1193,43 +1203,19 @@ const uploadDocument = async (event) => {
 
     // Construct S3 object URL
     console.log("Construct S3 object URL");
-    const s3ObjectUrl = `https://${BUCKET}.s3.amazonaws.com/${filename}`;
+    const s3ObjectUrl = `https://${BUCKET}.s3.amazonaws.com/${documentId}_${documentType}_${documentName}_${filename}_${epochMilliseconds}`;
 
-    // Check if an document already exists for the employee
-    const existingDocument = await getDocumentByEmployeeId(event.pathParameters.documentId);
-      if (!existingDocument) {
-        throw new Error("Document Details Not found for employee.");
-    }
-    async function getDocumentByEmployeeId(documentId) {
-      const params = {
-        TableName: process.env.DOCUMENT_TABLE,
-        KeyConditionExpression: "documentId = :documentId",
-        ExpressionAttributeValues: {
-          ":documentId": { "N": documentId.toString() },
-        },
-      };
-
-      try {
-        const result = await client.send(new QueryCommand(params));
-        return result.Items.length > 0; // Assuming you want to return true if education exists, false otherwise
-      } catch (error) {
-        console.error("Error retrieving document details for employee:", error);
-        throw error;
-      }
-    }
-
-
-    // Update item in DynamoDB
+    // Update item in DynamoDB with S3 object URL
     await client.send(new UpdateItemCommand({
       TableName: process.env.DOCUMENT_TABLE,
       Key: {
-        documentId: { N: documentId.toString() }, // Assuming educationId is a number
+        documentId: { N: documentId.toString() },
       },
       UpdateExpression: "SET link = :link",
       ExpressionAttributeValues: {
         ":link": { S: s3ObjectUrl },
       },
-      ReturnValues: "ALL_NEW" // Return the updated item
+      ReturnValues: "ALL_NEW"
     }));
 
     return {
@@ -1247,6 +1233,31 @@ const uploadDocument = async (event) => {
     };
   }
 };
+
+async function getDocumentByEmployeeId(documentId) {
+  const params = {
+    TableName: process.env.DOCUMENT_TABLE,
+    KeyConditionExpression: "documentId = :documentId",
+    ExpressionAttributeValues: {
+      ":documentId": { "N": documentId.toString() },
+    },
+  };
+
+  try {
+    const result = await client.send(new QueryCommand(params));
+    // Check if any items were found
+    if (result.Items.length > 0) {
+      // Assuming you expect only one document for the given ID
+      return result.Items[0]; // Return the first document found
+    } else {
+      // If no document found, return null or throw an error, depending on your requirement
+      return null;
+    }
+  } catch (error) {
+    console.error("Error retrieving document details for employee:", error);
+    throw error;
+  }
+}
 
 
 function extractFile(event) {
