@@ -1186,14 +1186,14 @@ const uploadDocument = async (event) => {
     console.log("extract file function is executed");
 
     const documentDetails = await getDocumentByEmployeeId(documentId);
-    console.log("document details", documentType);
+    console.log("document details", documentDetails);
 
     if (!documentDetails) {
       throw new Error("Document Details Not found for employee.");
     }
 
     // Extract required parameters from document details
-    const doument = unmarshall(documentDetails);
+    const { documentType, documentName } = documentDetails.Item;
    
     console.log("document type", doument);
     console.log("document name", documentName);
