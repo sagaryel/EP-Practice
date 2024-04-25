@@ -1193,7 +1193,7 @@ const uploadDocument = async (event) => {
     }
 
     // Extract required parameters from document details
-    const { documentType, documentName } = unmarshall(documentDetails.Item);
+    const { documentType, documentName } = documentDetails.Item;
    
     console.log("document type", documentType);
     console.log("document name", documentName);
@@ -1246,9 +1246,9 @@ async function getDocumentByEmployeeId(documentId) {
       ":documentId": { "N": documentId.toString() },
     },
   };
-
+  
   try {
-    const result = await client.send(new QueryCommand(params));
+    const result = await client.send(new ScanCommand(params));
     // Check if any items were found
     if (result.Items.length > 0) {
       // Assuming you expect only one document for the given ID
