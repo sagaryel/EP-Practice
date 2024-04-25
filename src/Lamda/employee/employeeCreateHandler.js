@@ -1193,9 +1193,9 @@ const uploadDocument = async (event) => {
     }
 
     // Extract required parameters from document details
-    const { documentType, documentName } = documentDetails.Item;
+    const { documentType, documentName } = unmarshall(documentDetails.Item);
    
-    console.log("document type", doument);
+    console.log("document type", documentType);
     console.log("document name", documentName);
     const epochMilliseconds = Date.now();
     // Upload file to S3
