@@ -1186,13 +1186,15 @@ const uploadDocument = async (event) => {
     console.log("extract file function is executed");
 
     const documentDetails = await getDocumentByEmployeeId(documentId);
+    console.log("document details", documentType);
 
     if (!documentDetails) {
       throw new Error("Document Details Not found for employee.");
     }
 
     // Extract required parameters from document details
-    const {  documentType, documentName } = documentDetails;
+    const documentType = documentDetails.Item.S;
+    const documentName = documentDetails.Item.S;
     console.log("document type", documentType);
     console.log("document name", documentName);
     const epochMilliseconds = Date.now();
