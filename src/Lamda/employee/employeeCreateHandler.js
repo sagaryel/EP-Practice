@@ -1192,7 +1192,7 @@ const uploadDocument = async (event) => {
     }
 
     // Extract required parameters from document details
-    const { documentType, documentName } = documentDetails;
+    const { documentType, documentName } = documentDetails.Item;
     const epochMilliseconds = Date.now();
     // Upload file to S3
     await s3.putObject({
