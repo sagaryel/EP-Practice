@@ -1192,7 +1192,7 @@ const uploadDocument = async (event) => {
     }
 
     // Extract required parameters from document details
-    const {  documentType, documentName } = documentDetails.Item;
+    const {  documentType, documentName } = documentDetails;
     console.log("document type", documentType);
     console.log("document name", documentName);
     const epochMilliseconds = Date.now();
