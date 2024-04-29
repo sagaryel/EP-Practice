@@ -1192,8 +1192,8 @@ const uploadDocument = async (event) => {
       throw new Error("Document Details Not found for employee.");
     }
    
-    console.log("document type", documentType);
-    console.log("document name", documentName);
+    // console.log("document type", documentType);
+    // console.log("document name", documentName);
     const epochMilliseconds = Date.now();
     // Upload file to S3
     await s3.putObject({
