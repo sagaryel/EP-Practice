@@ -1280,7 +1280,7 @@ function extractFile(event) {
     Buffer.from(event.body, 'base64'),
     boundary
   );
-
+  console.log("parts exicuted");
   if (!parts || parts.length === 0) {
     throw new Error('No parts found in the multipart request.');
   }
