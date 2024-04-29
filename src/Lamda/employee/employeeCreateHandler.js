@@ -1295,6 +1295,14 @@ function extractFile(event) {
   }
   console.log("Invalid or missing file name or data in the multipart request.");
 
+  // Check file extension
+  const allowedExtensions = ['.png', '.jpeg', '.pdf'];
+  const fileExtension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+  console.log("fileExtension", fileExtension);
+  if (!allowedExtensions.includes(fileExtension)) {
+    throw new Error('Invalid file extension. Only PNG, JPEG, and PDF files are allowed.');
+  }
+
   // Check file size (assuming data is in binary format)
   const fileSizeInMB = data.length / (1024 * 1024); // Convert bytes to MB
   console.log("file size", fileSizeInMB);
@@ -1302,13 +1310,6 @@ function extractFile(event) {
   if (fileSizeInMB > maxSizeInMB) {
     throw new Error(`File size exceeds the maximum limit of ${maxSizeInMB} MB.`);
   }
-
-   // Check file extension
-   const allowedExtensions = ['.png', '.jpeg', '.pdf'];
-   const fileExtension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
-   if (!allowedExtensions.includes(fileExtension)) {
-     throw new Error('Invalid file extension. Only PNG, JPEG, and PDF files are allowed.');
-   }
  
 
   return {
