@@ -1223,7 +1223,7 @@ const uploadDocument = async (event) => {
       statusCode: 200,
       body: JSON.stringify({
         link: s3ObjectUrl,
-        message: "Document details of employee updated successfully",
+        message: "Document details of employee uploaded successfully",
       }),
     };
   } catch (err) {
@@ -1297,6 +1297,14 @@ function extractFile(event) {
   if (fileSizeInMB > maxSizeInMB) {
     throw new Error(`File size exceeds the maximum limit of ${maxSizeInMB} MB.`);
   }
+
+   // Check file extension
+   const allowedExtensions = ['.png', '.jpeg', '.pdf'];
+   const fileExtension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+   if (!allowedExtensions.includes(fileExtension)) {
+     throw new Error('Invalid file extension. Only PNG, JPEG, and PDF files are allowed.');
+   }
+ 
 
   return {
     filename,
