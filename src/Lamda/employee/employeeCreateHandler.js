@@ -1191,9 +1191,6 @@ const uploadDocument = async (event) => {
     if (!documentDetails) {
       throw new Error("Document Details Not found for employee.");
     }
-
-    // Extract required parameters from document details
-    const { documentType, documentName } = documentDetails.Item;
    
     console.log("document type", documentType);
     console.log("document name", documentName);
@@ -1207,7 +1204,7 @@ const uploadDocument = async (event) => {
 
     // Construct S3 object URL
     console.log("Construct S3 object URL");
-    const s3ObjectUrl = `https://${BUCKET}.s3.amazonaws.com/${documentId}_${documentType}_${documentName}_${filename}_${epochMilliseconds}`;
+    const s3ObjectUrl = `https://${BUCKET}.s3.amazonaws.com/${documentId}_${filename}_${epochMilliseconds}`;
 
     // Update item in DynamoDB with S3 object URL
     await client.send(new UpdateItemCommand({
@@ -1246,9 +1243,9 @@ async function getDocumentByEmployeeId(documentId) {
       ":documentId": { "N": documentId.toString() },
     },
   };
-  
+
   try {
-    const result = await client.send(new ScanCommand(params));
+    const result = await client.send(new QueryCommand(params));
     // Check if any items were found
     if (result.Items.length > 0) {
       // Assuming you expect only one document for the given ID
