@@ -1262,6 +1262,7 @@ async function getDocumentByEmployeeId(documentId) {
 
 
 function extractFile(event) {
+  console.log("inside the extract file");
   const contentType = event.headers['Content-Type'];
   if (!contentType) {
     throw new Error('Content-Type header is missing in the request.');
@@ -1273,6 +1274,7 @@ function extractFile(event) {
       'Unable to determine the boundary from the Content-Type header.'
     );
   }
+  console.log("Unable to determine the boundary from the Content-Type header.");
 
   const parts = parseMultipart.Parse(
     Buffer.from(event.body, 'base64'),
@@ -1282,6 +1284,7 @@ function extractFile(event) {
   if (!parts || parts.length === 0) {
     throw new Error('No parts found in the multipart request.');
   }
+  console.log("No parts found in the multipart request.");
 
   const [{ filename, data }] = parts;
 
@@ -1290,9 +1293,11 @@ function extractFile(event) {
       'Invalid or missing file name or data in the multipart request.'
     );
   }
+  console.log("Invalid or missing file name or data in the multipart request.");
 
   // Check file size (assuming data is in binary format)
   const fileSizeInMB = data.length / (1024 * 1024); // Convert bytes to MB
+  console.log("file size", fileSizeInMB);
   const maxSizeInMB = 3;
   if (fileSizeInMB > maxSizeInMB) {
     throw new Error(`File size exceeds the maximum limit of ${maxSizeInMB} MB.`);
