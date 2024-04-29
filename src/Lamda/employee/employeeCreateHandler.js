@@ -1286,9 +1286,9 @@ function extractFile(event) {
   }
   console.log("No parts found in the multipart request.");
 
-  const [{ filename, data }] = parts;
+  const [{ filename, data, type }] = parts;
 
-  if (!filename || !data) {
+  if (!filename || !data || !type) {
     throw new Error(
       'Invalid or missing file name or data in the multipart request.'
     );
