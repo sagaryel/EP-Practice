@@ -193,8 +193,8 @@ functions:
   uploadDocument:
     handler: src/Lamda/employee/employeeCreateHandler.uploadDocument
     name: uploadDocument
-    memorySize: 128
-    timeout: 120
+    memorySize: 256
+    timeout: 240
     events:
       - http:
           path: documennt/{documentId}
