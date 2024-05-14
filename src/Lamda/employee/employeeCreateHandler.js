@@ -9,21 +9,24 @@ const pool = new Pool({
 });
 
 const getEmployee = async (event) => {
+  console.log("inside the get employee method");
   const employeeId = event.queryStringParameters.employeeId;
-  const tableName = 'employees'; // Replace 'employees' with your actual table name
+  //const tableName = 'employees'; // Replace 'employees' with your actual table name
 
   try {
+    console.log("inside the try block of get employee method");
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM ' + tableName + ' WHERE employee_id = $1', [employeeId]);
+    const result = await client.query('SELECT * FROM employees');
+    console.log("query exicuted and the result", result);
     client.release();
-
+    console.log("checking the length of result");
     if (result.rows.length === 0) {
       return {
         statusCode: 404,
         body: JSON.stringify({ message: 'Employee not found' }),
       };
     }
-
+    console.log("return result");
     return {
       statusCode: 200,
       body: JSON.stringify(result.rows[0]),
