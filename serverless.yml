@@ -14,7 +14,7 @@ provider:
 functions:
   employeeGet:
     handler: src/Lamda/employee/employeeCreateHandler.getEmployee
-    timeout: 300
+    timeout: 900
     memorySize: 128
     events:
       - http:
