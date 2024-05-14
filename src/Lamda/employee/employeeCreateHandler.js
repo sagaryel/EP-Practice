@@ -16,7 +16,7 @@ const getEmployee = async (event) => {
   try {
     console.log("inside the try block of get employee method");
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM employees');
+    const result = await client.query("SELECT * FROM employees");
     console.log("query exicuted and the result", result);
     client.release();
     console.log("checking the length of result");

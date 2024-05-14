@@ -5,7 +5,7 @@ provider:
   stage: sit
   region: us-east-2
   environment:
-    PG_HOST: localhost
+    PG_HOST: database-1.crmqmwsmwk90.us-east-2.rds.amazonaws.com
     PG_PORT: 5432
     PG_DATABASE: employee
     PG_USERNAME: postgres
@@ -14,6 +14,8 @@ provider:
 functions:
   employeeGet:
     handler: src/Lamda/employee/employeeCreateHandler.getEmployee
+    timeout: 120
+    memorySize: 128
     events:
       - http:
           path: employee
