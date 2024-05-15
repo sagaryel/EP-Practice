@@ -16,6 +16,8 @@ const fs = require("fs");
 const BUCKET = 'uat-employeedocumentupload';
 const multipart = require('aws-lambda-multipart-parser');
 const parseMultipart = require("parse-multipart");
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -99,8 +101,12 @@ const createEmployee = async (event) => {
       }),
     };
     const createResult = await client.send(new PutItemCommand(params));
+
+    // Send email notification to the employee
+    await sendEmailNotificationToOnbordingCustomer(requestBody);
+
     response.body = JSON.stringify({
-      message: httpStatusMessages.SUCCESSFULLY_CREATED_ASSIGNMENT_DETAILS,
+      message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
       createResult,
     });
   } catch (e) {
@@ -139,6 +145,28 @@ const isEmailExists = async (emailAddress) => {
   const command = new ScanCommand(params);
   const data = await client.send(command);
   return data.Items.length > 0;
+};
+
+const sendEmailNotificationToOnbordingCustomer = async (employee) => {
+  const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
+
+  const msg = {
+    to: employee.officeEmailAddress,
+    from: process.env.SENDER_MAIL_ID, // Your verified SendGrid sender email
+    templateId: process.env.SENDGRID_TEMPLATE_ID, // Your SendGrid dynamic template ID
+    dynamic_template_data: {
+      Employee_Name: `${employee.firstName} ${employee.lastName}`,
+      Email: employee.officeEmailAddress,
+      Employee_Portal_Access_Link: resetPasswordLink,
+    },
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log(`Email sent to ${employee.officeEmailAddress}`);
+  } catch (error) {
+    console.error(`Failed to send email: ${error.message}`);
+  }
 };
 
 // async function getHighestSerialNumber() {
