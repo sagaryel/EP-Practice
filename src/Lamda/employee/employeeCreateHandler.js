@@ -103,6 +103,7 @@ const createEmployee = async (event) => {
     const createResult = await client.send(new PutItemCommand(params));
 
     // Send email notification to the employee
+    console.log("calling email notification");
     await sendEmailNotificationToOnbordingCustomer(requestBody);
 
     response.body = JSON.stringify({
@@ -148,8 +149,9 @@ const isEmailExists = async (emailAddress) => {
 };
 
 const sendEmailNotificationToOnbordingCustomer = async (employee) => {
+  console.log("inside the notification method");
   const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
-
+  console.log("reset ped link", resetPasswordLink);
   const msg = {
     to: employee.officeEmailAddress,
     from: process.env.SENDER_MAIL_ID, // Your verified SendGrid sender email
@@ -160,8 +162,10 @@ const sendEmailNotificationToOnbordingCustomer = async (employee) => {
       Employee_Portal_Access_Link: resetPasswordLink,
     },
   };
+  console.log("assigned all the values message", msg);
 
   try {
+    console.log("inside the try block of send email method");
     await sgMail.send(msg);
     console.log(`Email sent to ${employee.officeEmailAddress}`);
   } catch (error) {
