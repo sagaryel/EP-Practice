@@ -17,7 +17,6 @@ const BUCKET = 'uat-employeedocumentupload';
 const multipart = require('aws-lambda-multipart-parser');
 const parseMultipart = require("parse-multipart");
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -152,6 +151,7 @@ const sendEmailNotificationToOnbordingCustomer = async (employee) => {
   console.log("inside the notification method");
   const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
   console.log("reset ped link", resetPasswordLink);
+  sgMail.setApiKey("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");
   const msg = {
     to: employee.officeEmailAddress,
     from: process.env.SENDER_MAIL_ID, // Your verified SendGrid sender email
