@@ -155,7 +155,7 @@ const sendEmailNotificationToOnbordingCustomer = async (employee) => {
   const msg = {
     to: employee.officeEmailAddress,
     from: process.env.SENDER_MAIL_ID, // Your verified SendGrid sender email
-    templateId: process.env.SENDGRID_TEMPLATE_ID, // Your SendGrid dynamic template ID
+    templateId: process.env.TEMPLATE_ID, // Your SendGrid dynamic template ID
     dynamic_template_data: {
       Employee_Name: `${employee.firstName} ${employee.lastName}`,
       Email: employee.officeEmailAddress,
