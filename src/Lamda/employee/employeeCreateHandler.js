@@ -149,9 +149,10 @@ const isEmailExists = async (emailAddress) => {
 
 const sendEmailNotificationToOnbordingCustomer = async (employee) => {
   console.log("inside the notification method");
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
   console.log("reset ped link", resetPasswordLink);
-  sgMail.setApiKey("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");
+  console.log("SendGrid API Key:", process.env.SENDGRID_API_KEY);
   const msg = {
     to: employee.officeEmailAddress,
     from: process.env.SENDER_MAIL_ID, // Your verified SendGrid sender email
