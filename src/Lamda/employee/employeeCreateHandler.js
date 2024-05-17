@@ -170,7 +170,7 @@ const sendEmailNotificationToOnbordingCustomer = async (employee) => {
     await sgMail.send(msg);
     console.log(`Email sent to ${employee.officeEmailAddress}`);
   } catch (error) {
-    console.error(`Failed to send email: ${error.message}`);
+    console.error(`Failed to send email: ${error.response.body}`);
   }
 };
 
