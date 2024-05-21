@@ -8,6 +8,7 @@ provider:
     binaryMediaTypes:
       - 'multipart/form-data'
   environment:
+    AWS_REGION: us-east-1
     EMPLOYEE_TABLE: ${self:custom.employeeTableName}
     ASSIGNMENTS_TABLE: ${self:custom.assignmentTableName}
     ASSETS_TABLE: ${self:custom.assetTableName}
