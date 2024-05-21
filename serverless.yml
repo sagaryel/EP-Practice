@@ -32,7 +32,6 @@ provider:
         - !GetAtt BankTable.Arn
         - !GetAtt PfDetailsTable.Arn
         - !GetAtt documentsDetailsTable.Arn
-        - "arn:aws:ses:${self:provider.region}:*:*"
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
