@@ -130,24 +130,13 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
 
   const msg = {
     Destination: {
-      ToAddresses: [employee.officeEmailAddress],
+      ToAddresses: ["mohan.patil@hyniva.com"],
     },
     Message: {
       Body: {
-        Html: {
-          Charset: "UTF-8",
-          Data: `
-            <h1>Welcome ${employee.firstName} ${employee.lastName}</h1>
-            <p>Your email: ${employee.officeEmailAddress}</p>
-            <p>You can reset your password using the following link:</p>
-            <a href="${resetPasswordLink}">Reset Password</a>
-          `,
-        },
         Text: {
           Charset: "UTF-8",
-          Data: `Welcome ${employee.firstName} ${employee.lastName}\n
-                 Your email: ${employee.officeEmailAddress}\n
-                 You can reset your password using the following link: ${resetPasswordLink}`,
+          Data: "Hello",
         },
       },
       Subject: {
@@ -155,9 +144,9 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
         Data: "Welcome to Our Service",
       },
     },
-    Source: "Sagar.yelgond@hyniva.com", // Your verified SES sender email
+    Source: "sagar.yelgond@hyniva.com", // Ensure this email is verified in SES
   };
-  console.log("assigned all the values message", msg);
+  console.log("assigned all the values to the message", msg);
 
   try {
     console.log("inside the try block of send email method");
