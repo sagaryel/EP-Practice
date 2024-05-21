@@ -67,7 +67,7 @@ const createEmployee = async (event) => {
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     const params = {
-      TableName: process.env.EMPLOYEE_TABLE,
+      TableName: process.env.EMPLOYEE-TABLE,
       Item: marshall({
         serialNumber: nextSerialNumber,
         employeeId: requestBody.employeeId,
@@ -175,7 +175,7 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
 // Function to check if employeeId already exists
 const isEmployeeIdExists = async (employeeId) => {
   const params = {
-    TableName: process.env.EMPLOYEE_TABLE,
+    TableName: process.env.EMPLOYEE-TABLE,
     Key: { employeeId: { S: employeeId } },
   };
   const { Item } = await client.send(new GetItemCommand(params));
@@ -185,7 +185,7 @@ const isEmployeeIdExists = async (employeeId) => {
 
 const isEmailExists = async (emailAddress) => {
   const params = {
-    TableName: process.env.EMPLOYEE_TABLE,
+    TableName: process.env.EMPLOYEE-TABLE,
     FilterExpression: "officeEmailAddress = :email",
     ExpressionAttributeValues: {
       ":email": { S: emailAddress },
