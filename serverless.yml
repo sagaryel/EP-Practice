@@ -3,12 +3,12 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: dev
-  region: us-west-1
+  region: us-east-1
   apiGateway:
     binaryMediaTypes:
       - 'multipart/form-data'
   environment:
-    EMPLOYEE-TABLE: ${self:custom.employeeTableName}
+    EMPLOYEE_TABLE: ${self:custom.employeeTableName}
     ASSIGNMENTS_TABLE: ${self:custom.assignmentTableName}
     ASSETS_TABLE: ${self:custom.assetTableName}
     BANK_TABLE: ${self:custom.bankTableName}
