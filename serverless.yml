@@ -23,8 +23,6 @@ provider:
         - "dynamodb:Scan"
         - "dynamodb:DeleteItem"
         - "dynamodb:Query"
-        - "ses:SendEmail"
-        - "ses:SendRawEmail"
       Resource:
         - !GetAtt EmployeeTable.Arn
         - !GetAtt AssignmentTable.Arn
@@ -32,6 +30,11 @@ provider:
         - !GetAtt BankTable.Arn
         - !GetAtt PfDetailsTable.Arn
         - !GetAtt documentsDetailsTable.Arn
+    - Effect: "Allow"
+      Action:
+        - "ses:SendEmail"
+        - "ses:SendRawEmail"
+      Resource: "*"
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
