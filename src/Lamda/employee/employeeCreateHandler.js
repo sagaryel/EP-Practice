@@ -17,7 +17,7 @@ const BUCKET = 'uat-employeedocumentupload';
 const multipart = require('aws-lambda-multipart-parser');
 const parseMultipart = require("parse-multipart");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
-const sesClient = new SESClient({ region: "us-east-1" });
+const sesClient = new SESClient({ region: "US-EAST-1" });
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
