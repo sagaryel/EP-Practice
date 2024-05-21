@@ -16,7 +16,8 @@ const fs = require("fs");
 const BUCKET = 'uat-employeedocumentupload';
 const multipart = require('aws-lambda-multipart-parser');
 const parseMultipart = require("parse-multipart");
-const sgMail = require('@sendgrid/mail');
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const sesClient = new SESClient({ region: process.env.AWS_REGION });
 const s3 = new AWS.S3();
 const {
   httpStatusCodes,
@@ -103,7 +104,7 @@ const createEmployee = async (event) => {
 
     // Send email notification to the employee
     console.log("calling email notification");
-    await sendEmailNotificationToOnbordingCustomer(requestBody);
+    await sendEmailNotificationToOnboardingEmployee(requestBody);
 
     response.body = JSON.stringify({
       message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
@@ -119,6 +120,56 @@ const createEmployee = async (event) => {
     });
   }
   return response;
+};
+
+const sendEmailNotificationToOnboardingEmployee = async (employee) => {
+  console.log("inside the notification method");
+
+  const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
+  console.log("reset password link", resetPasswordLink);
+
+  const msg = {
+    Destination: {
+      ToAddresses: [employee.officeEmailAddress],
+    },
+    Message: {
+      Body: {
+        Html: {
+          Charset: "UTF-8",
+          Data: `
+            <h1>Welcome ${employee.firstName} ${employee.lastName}</h1>
+            <p>Your email: ${employee.officeEmailAddress}</p>
+            <p>You can reset your password using the following link:</p>
+            <a href="${resetPasswordLink}">Reset Password</a>
+          `,
+        },
+        Text: {
+          Charset: "UTF-8",
+          Data: `Welcome ${employee.firstName} ${employee.lastName}\n
+                 Your email: ${employee.officeEmailAddress}\n
+                 You can reset your password using the following link: ${resetPasswordLink}`,
+        },
+      },
+      Subject: {
+        Charset: "UTF-8",
+        Data: "Welcome to Our Service",
+      },
+    },
+    Source: "Sagar.yelgond@hyniva.com", // Your verified SES sender email
+  };
+  console.log("assigned all the values message", msg);
+
+  try {
+    console.log("inside the try block of send email method");
+    const command = new SendEmailCommand(msg);
+    await sesClient.send(command);
+    console.log(`Email sent to ${employee.officeEmailAddress}`);
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    if (error.response) {
+      console.error("Error response body:", error.response.body);
+    }
+  }
 };
 
 // Function to check if employeeId already exists
@@ -145,36 +196,6 @@ const isEmailExists = async (emailAddress) => {
   const command = new ScanCommand(params);
   const data = await client.send(command);
   return data.Items.length > 0;
-};
-
-const sendEmailNotificationToOnbordingCustomer = async (employee) => {
-  console.log("inside the notification method");
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
-  console.log("reset ped link", resetPasswordLink);
-  console.log("SendGrid API Key:", process.env.SENDGRID_API_KEY);
-  const msg = {
-    to: employee.officeEmailAddress,
-    from: process.env.SENDER_MAIL_ID, // Your verified SendGrid sender email
-    templateId: process.env.TEMPLATE_ID, // Your SendGrid dynamic template ID
-    dynamic_template_data: {
-      Employee_Name: `${employee.firstName} ${employee.lastName}`,
-      Email: employee.officeEmailAddress,
-      Employee_Portal_Access_Link: resetPasswordLink,
-    },
-  };
-  console.log("assigned all the values message", msg);
-
-  try {
-    console.log("inside the try block of send email method");
-    await sgMail.send(msg);
-    console.log(`Email sent to ${employee.officeEmailAddress}`);
-  } catch (error) {
-    console.error("Failed to send email:", error);
-    if (error.response) {
-      console.error("Error response body:", error.response.body);
-    }
-  }
 };
 
 // async function getHighestSerialNumber() {
