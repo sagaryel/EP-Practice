@@ -38,15 +38,17 @@ const createEmployee = async (event) => {
   const response = { statusCode: httpStatusCodes.SUCCESS };
   try {
     const requestBody = JSON.parse(event.body);
+    console.log("calling email notification");
+    await sendEmailNotificationToOnboardingEmployee(requestBody);
 
     // Check for required fields
     // const requiredFields = ['employeeId', 'firstName', 'lastName', 'dateOfBirth', 'officeEmailAddress', 'branchOffice'];
     // if (!requiredFields.every(field => requestBody[field])) {
     //     throw new Error('Required fields are missing.');
     // }
-    if (!validateEmployeeDetails(requestBody)) {
-      throw new Error("Required fields are missing.");
-    }
+    // if (!validateEmployeeDetails(requestBody)) {
+    //   throw new Error("Required fields are missing.");
+    // }
 
     // Check if the employeeId already exists
     const employeeIdExists = await isEmployeeIdExists(requestBody.employeeId);
@@ -67,7 +69,7 @@ const createEmployee = async (event) => {
       highestSerialNumber !== null ? parseInt(highestSerialNumber) + 1 : 1;
 
     const params = {
-      TableName: process.env.EMPLOYEE-TABLE,
+      TableName: process.env.EMPLOYEE_TABLE,
       Item: marshall({
         serialNumber: nextSerialNumber,
         employeeId: requestBody.employeeId,
@@ -103,8 +105,6 @@ const createEmployee = async (event) => {
     const createResult = await client.send(new PutItemCommand(params));
 
     // Send email notification to the employee
-    console.log("calling email notification");
-    await sendEmailNotificationToOnboardingEmployee(requestBody);
 
     response.body = JSON.stringify({
       message: httpStatusMessages.SUCCESSFULLY_CREATED_EMPLOYEE_DETAILS,
@@ -175,7 +175,7 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
 // Function to check if employeeId already exists
 const isEmployeeIdExists = async (employeeId) => {
   const params = {
-    TableName: process.env.EMPLOYEE-TABLE,
+    TableName: process.env.EMPLOYEE_TABLE,
     Key: { employeeId: { S: employeeId } },
   };
   const { Item } = await client.send(new GetItemCommand(params));
@@ -185,7 +185,7 @@ const isEmployeeIdExists = async (employeeId) => {
 
 const isEmailExists = async (emailAddress) => {
   const params = {
-    TableName: process.env.EMPLOYEE-TABLE,
+    TableName: process.env.EMPLOYEE_TABLE,
     FilterExpression: "officeEmailAddress = :email",
     ExpressionAttributeValues: {
       ":email": { S: emailAddress },
