@@ -8,17 +8,13 @@ provider:
     binaryMediaTypes:
       - 'multipart/form-data'
   environment:
-    AWS_REGION: us-east-1
+    MY_AWS_REGION: us-east-1
     EMPLOYEE_TABLE: ${self:custom.employeeTableName}
     ASSIGNMENTS_TABLE: ${self:custom.assignmentTableName}
     ASSETS_TABLE: ${self:custom.assetTableName}
     BANK_TABLE: ${self:custom.bankTableName}
     PF_ESI_TABLE : ${self:custom.pfTableName}
     DOCUMENT_TABLE : ${self:custom.documentTableName}
-    SENDGRID_API_KEY: "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"
-    API_Key_ID: "j-Cqgw36SP6L2W5HfIM-vA"
-    TEMPLATE_ID: "d-a8a35d647ac547acb9bdd28a3fe83f2a"
-    SENDER_MAIL_ID: "surendra.chakali@hyniva.com"
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -28,6 +24,8 @@ provider:
         - "dynamodb:Scan"
         - "dynamodb:DeleteItem"
         - "dynamodb:Query"
+        - "ses:SendEmail"
+        - "ses:SendRawEmail"
       Resource:
         - !GetAtt EmployeeTable.Arn
         - !GetAtt AssignmentTable.Arn
@@ -35,6 +33,7 @@ provider:
         - !GetAtt BankTable.Arn
         - !GetAtt PfDetailsTable.Arn
         - !GetAtt documentsDetailsTable.Arn
+        - "arn:aws:ses:${self:provider.region}:*:*"
 custom:
   employeeTableName: employee-Details-${self:provider.stage}
   assignmentTableName: assignment-Details-${self:provider.stage}
