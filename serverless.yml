@@ -14,6 +14,7 @@ provider:
     BANK_TABLE: ${self:custom.bankTableName}
     PF_ESI_TABLE : ${self:custom.pfTableName}
     DOCUMENT_TABLE : ${self:custom.documentTableName}
+    RESET_PASSWORD_LINK: "https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword"
   iamRoleStatements:
     - Effect: "Allow"
       Action:

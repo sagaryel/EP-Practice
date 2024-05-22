@@ -125,7 +125,7 @@ const createEmployee = async (event) => {
 const sendEmailNotificationToOnboardingEmployee = async (employee) => {
   console.log("inside the notification method");
 
-  const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
+  const resetPasswordLink = process.env.RESET_PASSWORD_LINK;
   console.log("reset password link", resetPasswordLink);
 
   const { officeEmailAddress, firstName } = employee;
@@ -150,7 +150,7 @@ Access Link: ${resetPasswordLink}
 
 Please use the provided username and access link to log in to your employee portal. This portal will serve as your central hub for accessing company resources, managing your profile, and staying connected with your colleagues.
 
-If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at hr@hyniva.com.
+If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at ${`hr@hyniva.com`}.
           `,
         },
       },
@@ -159,7 +159,7 @@ If you have any questions or encounter any issues during the login process, plea
         Data: "Welcome to Hyniva - Your Employee Portal Account Details",
       },
     },
-    Source: "sagar.yelgond@hyniva.com", // Ensure this email is verified in SES
+    Source: "mohan.patil@hyniva.com", // Ensure this email is verified in SES
   };
   console.log("assigned all the values to the message", msg);
 
