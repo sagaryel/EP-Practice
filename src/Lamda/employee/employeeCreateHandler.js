@@ -136,6 +136,16 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
     },
     Message: {
       Body: {
+        Html: {
+          Charset: "UTF-8",
+          Data: `<p>Dear ${firstName},</p>
+<p>Welcome! We are thrilled to have you join the Hyniva team. As you begin your journey with us, we want to ensure you have everything you need to get started smoothly.</p>
+<p>Your employee portal account has been successfully created, and we're excited to provide you with your login credentials:</p>
+<p>Username: ${officeEmailAddress}</p>
+<p>Access Link: <a href="${resetPasswordLink}">${resetPasswordLink}</a></p>
+<p>Please use the provided username and access link to log in to your employee portal. This portal will serve as your central hub for accessing company resources, managing your profile, and staying connected with your colleagues.</p>
+<p>If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at <a href="mailto:hr@hyniva.com">hr@hyniva.com</a>.</p>`,
+        },
         Text: {
           Charset: "UTF-8",
           Data: `Dear ${firstName},
@@ -150,8 +160,7 @@ Access Link: ${resetPasswordLink}
 
 Please use the provided username and access link to log in to your employee portal. This portal will serve as your central hub for accessing company resources, managing your profile, and staying connected with your colleagues.
 
-If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at <a href="mailto:hr@hyniva.com">hr@hyniva.com</a>
-          `,
+If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at hr@hyniva.com.`,
         },
       },
       Subject: {
@@ -159,7 +168,7 @@ If you have any questions or encounter any issues during the login process, plea
         Data: "Welcome to Hyniva - Your Employee Portal Account Details",
       },
     },
-    Source: "mohan.patil@hyniva.com", // Ensure this email is verified in SES
+    Source: "sagar.yelgond@hyniva.com", // Ensure this email is verified in SES
   };
   console.log("assigned all the values to the message", msg);
 
