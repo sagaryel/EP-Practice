@@ -150,7 +150,7 @@ Access Link: ${resetPasswordLink}
 
 Please use the provided username and access link to log in to your employee portal. This portal will serve as your central hub for accessing company resources, managing your profile, and staying connected with your colleagues.
 
-If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at ${`hr@hyniva.com`}.
+If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at <a href="mailto:hr@hyniva.com">hr@hyniva.com</a>
           `,
         },
       },
