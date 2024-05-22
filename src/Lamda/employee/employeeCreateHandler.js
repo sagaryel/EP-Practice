@@ -128,20 +128,35 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
   const resetPasswordLink = `https://dev.d3k5lezo15oi2f.amplifyapp.com/resetPassword`;
   console.log("reset password link", resetPasswordLink);
 
+  const { officeEmailAddress, firstName } = employee;
+
   const msg = {
     Destination: {
-      ToAddresses: ["mohan.patil@hyniva.com"],
+      ToAddresses: [officeEmailAddress],
     },
     Message: {
       Body: {
         Text: {
           Charset: "UTF-8",
-          Data: "Hello",
+          Data: `Dear ${firstName},
+
+Welcome! We are thrilled to have you join the Hyniva team. As you begin your journey with us, we want to ensure you have everything you need to get started smoothly.
+
+Your employee portal account has been successfully created, and we're excited to provide you with your login credentials:
+
+Username: ${officeEmailAddress}
+
+Access Link: ${resetPasswordLink}
+
+Please use the provided username and access link to log in to your employee portal. This portal will serve as your central hub for accessing company resources, managing your profile, and staying connected with your colleagues.
+
+If you have any questions or encounter any issues during the login process, please don't hesitate to reach out to our HR team at hr@hyniva.com.
+          `,
         },
       },
       Subject: {
         Charset: "UTF-8",
-        Data: "Welcome to Our Service",
+        Data: "Welcome to Hyniva - Your Employee Portal Account Details",
       },
     },
     Source: "sagar.yelgond@hyniva.com", // Ensure this email is verified in SES
@@ -152,7 +167,7 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
     console.log("inside the try block of send email method");
     const command = new SendEmailCommand(msg);
     await sesClient.send(command);
-    console.log(`Email sent to ${employee.officeEmailAddress}`);
+    console.log(`Email sent to ${officeEmailAddress}`);
   } catch (error) {
     console.error("Failed to send email:", error);
     if (error.response) {
@@ -160,7 +175,6 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
     }
   }
 };
-
 // Function to check if employeeId already exists
 const isEmployeeIdExists = async (employeeId) => {
   const params = {
