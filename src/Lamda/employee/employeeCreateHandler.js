@@ -126,7 +126,7 @@ const sendEmailNotificationToOnboardingEmployee = async (employee) => {
   console.log("inside the notification method");
 
   const resetPasswordBaseLink = process.env.RESET_PASSWORD_LINK;
-  const resetPasswordLink = `${resetPasswordBaseLink}?email=${encodeURIComponent(employee.officeEmailAddress)}`;
+  const resetPasswordLink = `${resetPasswordBaseLink}?email=${(employee.officeEmailAddress)}`;
   console.log("reset password link", resetPasswordLink);
 
   const { officeEmailAddress, firstName } = employee;
