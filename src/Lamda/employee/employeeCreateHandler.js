@@ -125,7 +125,8 @@ const createEmployee = async (event) => {
 const sendEmailNotificationToOnboardingEmployee = async (employee) => {
   console.log("inside the notification method");
 
-  const resetPasswordLink = process.env.RESET_PASSWORD_LINK;
+  const resetPasswordBaseLink = process.env.RESET_PASSWORD_LINK;
+  const resetPasswordLink = `${resetPasswordBaseLink}?email=${encodeURIComponent(officeEmailAddress)}`;
   console.log("reset password link", resetPasswordLink);
 
   const { officeEmailAddress, firstName } = employee;
@@ -154,7 +155,7 @@ Welcome! We are thrilled to have you join the Hyniva team. As you begin your jou
 
 Your employee portal account has been successfully created, and we're excited to provide you with your login credentials:
 
-Username: ${officeEmailAddress}
+UserName: ${officeEmailAddress}
 
 Access Link: ${resetPasswordLink}
 
