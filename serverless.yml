@@ -2,19 +2,19 @@ service: employee-portal-service
 provider:
   name: aws
   runtime: nodejs18.x
-  stage: sit
-  region: us-east-2
+  stage: dev
+  region: ap-south-1
   environment:
-    PG_HOST: localhost
+    PG_HOST: 13.200.180.211
     PG_PORT: 5432
-    PG_DATABASE: employee
+    PG_DATABASE: emp-dev
     PG_USERNAME: postgres
     PG_PASSWORD: postgres
 
 functions:
   employeeGet:
-    handler: src/Lamda/employee/employeeCreateHandler.getEmployee
-    timeout: 900
+    handler: src/Lambda/employee/employeeCreateHandler.getEmployee
+    timeout: 300
     memorySize: 128
     events:
       - http:

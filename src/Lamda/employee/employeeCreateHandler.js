@@ -1,24 +1,28 @@
 const { Pool } = require('pg');
 
+// Initialize the Pool using environment variables
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "employee",
-  password: "postgres",
-  port: 5432,
+  user: process.env.PG_USERNAME,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
 });
 
 const getEmployee = async (event) => {
   console.log("inside the get employee method");
   const employeeId = event.queryStringParameters.employeeId;
-  //const tableName = 'employees'; // Replace 'employees' with your actual table name
 
   try {
     console.log("inside the try block of get employee method");
     const client = await pool.connect();
-    const result = await client.query("SELECT * FROM employees");
-    console.log("query exicuted and the result", result);
+
+    // Use parameterized query to prevent SQL injection
+    const result = await client.query("SELECT * FROM employee_details WHERE id = $1", [employeeId]);
+    console.log("query executed and the result:", result);
+
     client.release();
+
     console.log("checking the length of result");
     if (result.rows.length === 0) {
       return {
@@ -26,6 +30,7 @@ const getEmployee = async (event) => {
         body: JSON.stringify({ message: 'Employee not found' }),
       };
     }
+
     console.log("return result");
     return {
       statusCode: 200,
