@@ -46,5 +46,5 @@ const getEmployee = async (event) => {
 };
 
 module.exports = {
-  getEmployee,
+  getEmployee
 };
