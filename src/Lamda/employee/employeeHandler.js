@@ -56,7 +56,7 @@ const createEmployee = async (event) => {
 
     // Use parameterized query to prevent SQL injection
     const result = await client.query(
-      "INSERT INTO employee_details (employee_id, firstName, lastname) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO employee_details (employee_id, first_name, last_name) VALUES ($1, $2, $3) RETURNING *",
       [employeeId, firstName, lastName]
     );
     console.log("query executed and the result:", result);
