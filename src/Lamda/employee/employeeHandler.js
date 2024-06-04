@@ -48,7 +48,7 @@ const getEmployee = async (event) => {
 
 const createEmployee = async (event) => {
   console.log("inside the create employee method");
-  const {id, firstName, lastName } = JSON.parse(event.body);
+  const {employeeId, firstName, lastName } = JSON.parse(event.body);
 
   try {
     console.log("inside the try block of create employee method");
