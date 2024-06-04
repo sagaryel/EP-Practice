@@ -25,6 +25,15 @@ functions:
             parameters:
               querystrings:
                 employeeId: true
+  employeePost:
+    handler: src/Lamda/employee/employeeHandler.createEmployee
+    timeout: 120
+    memorySize: 128
+    events:
+      - http:
+          path: employee
+          method: POST
+          cors: true
 
 plugins:
   - serverless-iam-roles-per-function

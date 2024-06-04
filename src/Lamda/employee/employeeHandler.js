@@ -45,6 +45,38 @@ const getEmployee = async (event) => {
   }
 };
 
+
+const createEmployee = async (event) => {
+  console.log("inside the create employee method");
+  const {id, firstName, lastName } = JSON.parse(event.body);
+
+  try {
+    console.log("inside the try block of create employee method");
+    const client = await pool.connect();
+
+    // Use parameterized query to prevent SQL injection
+    const result = await client.query(
+      "INSERT INTO employee_details (id, firstName, lastname) VALUES ($1, $2, $3) RETURNING *",
+      [id, firstName, lastName]
+    );
+    console.log("query executed and the result:", result);
+
+    client.release();
+
+    return {
+      statusCode: 201,
+      body: JSON.stringify(result.rows[0]),
+    };
+  } catch (error) {
+    console.error('Error executing query', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Internal server error' }),
+    };
+  }
+};
+
 module.exports = {
-  getEmployee
+  getEmployee,
+  createEmployee,
 };
