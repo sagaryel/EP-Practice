@@ -13,7 +13,7 @@ provider:
 
 functions:
   employeeGet:
-    handler: src/Lambda/employee/employeeHandler.getEmployee
+    handler: src/Lamda/employee/employeeHandler.getEmployee
     timeout: 300
     memorySize: 128
     events:
